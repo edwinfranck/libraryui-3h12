@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Olla</title>
+<meta name="description" content="3 H 12 — Olla a fermé en 2019. Quelqu'un s'y connecte encore toutes les nuits à 3 h 12. Une enquête dans le navigateur, construite avec LibraryUI.">
+<meta property="og:title" content="3 H 12 — qui se connecte à Olla toutes les nuits ?">
+<meta property="og:description" content="Une enquête de 15 minutes dans le navigateur. Trouve le flag.">
+<meta property="og:image" content="https://libraryui-3h12.vercel.app/captures/01-accueil.jpg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070b16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<!--LUI-CSS-->
+<style>
+/* ---------- jetons ---------- */
+:root{
+  --ease-out:cubic-bezier(0.23,1,0.32,1);--ease-in-out:cubic-bezier(0.77,0,0.175,1);
+  --page:#070b16;--surf:#0f1627;--surf2:#151e34;--line:rgba(255,255,255,.08);
+  --txt:#e8ebf4;--txt2:#a3acc2;--acc:#818cf8;--acc2:#6366f1;--ghost:#34d399;--gold:#fde68a;--bad:#fca5a5;
+}
+/* ---------- coque de la maquette (hors composants) ---------- */
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--page);color:var(--txt);-webkit-font-smoothing:antialiased}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:2900;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+button{-webkit-tap-highlight-color:transparent}
+button:not(:disabled):active{transform:scale(.97)}
+.app-view{display:none}.app-view.on{display:block;animation:app-in .32s var(--ease-out) both}
+.app-page{display:none}.app-page.on{display:block;animation:app-in .24s var(--ease-out) both}
+@keyframes app-in{from{opacity:0;transform:translateY(8px)}}
+.app-shell{display:flex;min-height:100vh}
+.app-main{flex:1;min-width:0;background:var(--page)}
+.app-top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:10px 24px;background:rgba(7,11,22,.78);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.app-top .app-actions{margin-left:auto;display:flex;gap:8px;align-items:center;position:relative}
+.app-btn{display:inline-flex;align-items:center;gap:.45rem;border:1px solid var(--line);background:var(--surf2);color:var(--txt);border-radius:.7rem;padding:.5rem .85rem;font:600 .85rem 'Inter',sans-serif;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,transform .12s var(--ease-out)}
+.app-btn--primary{background:var(--acc2);border-color:var(--acc2);color:#fff}
+@media(hover:hover) and (pointer:fine){.app-btn:hover{border-color:rgba(129,140,248,.5)}.app-btn--primary:hover{background:#5458e8}}
+.app-btn .app-pill{background:#ef4444;color:#fff;border-radius:99px;font-size:.65rem;padding:0 .35rem}
+.app-body{padding:24px;display:grid;gap:20px}
+.app-grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.app-center{display:flex;justify-content:center;padding:24px 0}
+.app-h{font:700 1.5rem 'Inter',sans-serif;letter-spacing:-.02em;margin:0}
+.app-who{color:var(--ghost);font-weight:700;text-decoration:none;border-bottom:1px dashed currentColor;cursor:pointer}
+.app-hidden-item{display:none}.app-show-hidden .app-hidden-item{display:block}
+.app-file{cursor:pointer;border-radius:6px}
+.app-file.app-sel .tree-view-anime__label{font-weight:700;text-decoration:underline}
+.app-ovl{position:fixed;inset:0;z-index:1000;background:rgba(3,6,14,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:16px}
+.app-ovl.on{display:flex}
+.app-ovl>.app-card{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:20px;width:100%;max-width:760px;position:relative;animation:pop-in .26s var(--ease-out) both}
+@keyframes pop-in{from{opacity:0;transform:scale(.96)}}
+.app-x{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:0;background:var(--surf2);color:var(--txt);cursor:pointer;z-index:2}
+.app-panel{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surf);border-left:1px solid var(--line);z-index:1200;box-shadow:-20px 0 60px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .3s var(--ease-drawer,cubic-bezier(0.32,0.72,0,1));overflow:auto}
+.app-panel.on{transform:none}
+.app-drop{position:absolute;top:calc(100% + 10px);right:0;width:min(400px,92vw);z-index:70;opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .18s var(--ease-out),transform .18s var(--ease-out)}
+.app-drop.on{opacity:1;transform:none;pointer-events:auto}
+.app-toasts{position:fixed;bottom:16px;right:16px;z-index:1250;width:min(360px,calc(100vw - 32px))}
+.app-search{display:none;gap:8px;flex-direction:column;margin:0 0 12px}
+.app-search.on{display:flex}
+.app-search .cv__event{cursor:pointer}
+.app-end{position:fixed;inset:0;z-index:1300;background:radial-gradient(90% 70% at 50% 30%,rgba(79,70,229,.25),rgba(3,6,14,.94) 70%);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.app-end.on{display:flex;animation:fade-in .4s ease-out both}
+@keyframes fade-in{from{opacity:0}}
+#dev{position:fixed;left:12px;bottom:12px;z-index:2000;background:#111827;color:#fff;border-radius:12px;padding:10px;font-size:.75rem;display:none;flex-wrap:wrap;gap:4px;max-width:340px;border:1px solid var(--line)}
+#dev.on{display:flex}#dev button{background:#374151;color:#fff;border:0;border-radius:6px;padding:4px 8px;cursor:pointer}
+
+/* ---------- HUD : objectif, fragments, score, indice ---------- */
+.app-hud{display:none;align-items:center;gap:4px;padding:5px;background:rgba(15,22,39,.86);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;box-shadow:0 12px 32px rgba(0,0,0,.4);z-index:1150;max-width:100%}
+.app-hud.on{display:flex}
+.app-hud.is-fixed{position:fixed;top:14px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 16px)}
+.app-hud-obj{display:flex;align-items:center;gap:8px;min-width:0;max-width:330px;background:transparent;border:0;color:var(--txt);font:600 .82rem 'Inter',sans-serif;padding:3px 10px 3px 3px;border-radius:999px;cursor:pointer}
+.app-hud-step{flex:none;font:600 .72rem 'JetBrains Mono',monospace;background:var(--acc2);color:#fff;border-radius:999px;padding:4px 9px}
+.app-hud-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-hud-frags{display:flex;gap:4px;padding:0 6px;border-left:1px solid var(--line)}
+.app-hud-frag{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.22);color:var(--txt2);font:600 .7rem 'JetBrains Mono',monospace;transition:background-color .3s var(--ease-out),border-color .3s var(--ease-out),color .3s var(--ease-out)}
+.app-hud-frag.got{background:rgba(129,140,248,.2);border:1px solid var(--acc);color:#e0e7ff}
+.app-hud-frag.pop{animation:frag-pop .5s var(--ease-out)}
+@keyframes frag-pop{40%{transform:scale(1.3);box-shadow:0 0 18px rgba(129,140,248,.8)}}
+.app-hud-score{flex:none;display:flex;align-items:center;gap:6px;padding:4px 10px;font:600 .82rem 'JetBrains Mono',monospace;color:var(--gold);border-left:1px solid var(--line)}
+.app-hud-hint{flex:none;display:flex;align-items:center;gap:6px;border:0;border-radius:999px;background:var(--surf2);color:var(--txt);font:600 .8rem 'Inter',sans-serif;padding:6px 12px;cursor:pointer;transition:background-color .15s ease,transform .12s var(--ease-out)}
+@media(hover:hover) and (pointer:fine){.app-hud-hint:hover{background:#1f2a47}.app-hud-obj:hover .app-hud-text{color:#fff}}
+.app-top .app-hud{box-shadow:none;background:var(--surf)}
+.app-brief{position:fixed;top:66px;left:50%;z-index:1149;width:min(520px,calc(100vw - 32px));background:rgba(15,22,39,.94);backdrop-filter:blur(14px);border:1px solid rgba(129,140,248,.35);border-radius:16px;padding:16px 18px;box-shadow:0 24px 60px rgba(0,0,0,.5);opacity:0;transform:translate(-50%,-10px) scale(.98);pointer-events:none;transition:opacity .26s var(--ease-out),transform .26s var(--ease-out)}
+.app-brief.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.app-brief-k{font:700 .7rem 'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--acc)}
+.app-brief p{margin:.35rem 0 0;font-size:1rem;font-weight:600;line-height:1.45;color:var(--txt)}
+.app-float{position:fixed;z-index:1400;font:700 .9rem 'JetBrains Mono',monospace;pointer-events:none}
+.app-fragpop{position:fixed;left:50%;top:44%;z-index:1350;display:none;pointer-events:none;width:min(360px,calc(100vw - 32px));background:radial-gradient(120% 100% at 50% 0%,#232b5c 0%,#0f1627 70%);border:1px solid rgba(129,140,248,.55);border-radius:22px;padding:26px 22px;text-align:center;box-shadow:0 0 0 6px rgba(99,102,241,.08),0 30px 80px rgba(79,70,229,.4);transform:translate(-50%,-50%)}
+.app-fragpop i{font-size:2rem;color:var(--acc)}
+.app-fragpop .k{display:block;margin-top:.5rem;font:700 .72rem 'Inter',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--acc)}
+.app-fragpop .v{display:block;margin:.4rem 0;font:600 1.35rem 'JetBrains Mono',monospace;color:#fff}
+.app-fragpop .s{font-size:.85rem;color:var(--txt2)}
+.app-fragpop .pts{display:inline-block;margin-top:.75rem;font:700 .85rem 'JetBrains Mono',monospace;color:#6ee7b7}
+.app-cost{margin-left:auto;margin-right:.75rem;font:600 .72rem 'JetBrains Mono',monospace;color:var(--bad)}
+.app-cost.ok{color:#6ee7b7}
+.app-hint-lock{color:var(--txt2);font-size:.85rem}
+
+/* ---------- moments fantômes ---------- */
+.app-glitch{animation:glitch .45s steps(2,end) 1}
+@keyframes glitch{20%{transform:translate(-2px,1px);text-shadow:2px 0 rgba(255,0,90,.75),-2px 0 rgba(0,220,255,.75)}40%{transform:translate(2px,-1px);clip-path:inset(12% 0 38% 0)}60%{transform:translate(-1px,0);clip-path:inset(52% 0 8% 0)}80%{transform:translate(1px,1px);clip-path:none;text-shadow:-1px 0 rgba(255,0,90,.6),1px 0 rgba(0,220,255,.6)}}
+.app-flicker{position:fixed;inset:0;z-index:2800;pointer-events:none;background:#c7d2fe;opacity:0}
+.app-flicker.on{animation:flicker .55s linear 1}
+@keyframes flicker{10%{opacity:.07}20%{opacity:0}32%{opacity:.11}46%{opacity:0}62%{opacity:.05}100%{opacity:0}}
+[data-reveal]{opacity:0;transform:translateY(16px);transition:opacity .6s var(--ease-out),transform .6s var(--ease-out);transition-delay:var(--d,0ms)}
+[data-reveal].in{opacity:1;transform:none}
+.app-stagger>*{animation:app-in .4s var(--ease-out) both;animation-delay:calc(var(--i,0) * 55ms)}
+
+@media(max-width:900px){
+  .app-grid2{grid-template-columns:1fr}
+  .app-body{padding:16px}
+  .app-top{padding:10px 12px;flex-wrap:wrap}
+}
+@media(max-width:600px){.app-hud-text{display:none}.app-hud-obj{padding-right:3px}.app-brief{top:62px}}
+
+/* ---------- réglages des composants pour Olla ---------- */
+.lui-onb .onboarding-container{background:radial-gradient(120% 90% at 50% 0%,#1e1b4b 0%,#070b16 70%)}
+.lui-onb .skip-btn{top:.6rem}
+.lui-onb .step-icon i{font-size:2.2rem;color:var(--acc)}
+.lui-onb .step-content:not(.hidden){animation:app-in .3s var(--ease-out) both}
+.lui-onb .app-flag{font-family:'JetBrains Mono',monospace;background:rgba(129,140,248,.18);color:#c7d2fe;padding:.1rem .4rem;border-radius:.35rem}
+.lui-cs .cs1{background:radial-gradient(110% 80% at 50% 0%,#1e1b4b 0%,#070b16 65%);position:relative;overflow:hidden}
+.lui-cs .cs1::before{content:"";position:absolute;inset:-20%;background:radial-gradient(40% 35% at 50% 40%,rgba(99,102,241,.25),transparent 70%);animation:breathe 7s ease-in-out infinite alternate;pointer-events:none}
+@keyframes breathe{from{opacity:.55;transform:scale(.96)}to{opacity:1;transform:scale(1.04)}}
+.lui-cs .cs1__inner{position:relative}
+.lui-cs h1{letter-spacing:-.03em}
+.lui-cs .cs1__val{font-family:'JetBrains Mono',monospace;font-weight:600;font-variant-numeric:tabular-nums}
+.lui-cs .app-cs-k{margin:2rem 0 .9rem;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;color:#a5b4fc}
+.lui-cs .app-ghost-name{color:var(--ghost);font-family:'JetBrains Mono',monospace;text-transform:none;letter-spacing:0}
+.lui-cs .app-live{display:inline-flex;align-items:center;gap:.5rem;margin-top:2rem;font-size:.85rem;color:var(--txt2)}
+.lui-cs .app-live b{color:var(--ghost)}
+.lui-cs .app-dot{width:8px;height:8px;border-radius:50%;background:var(--ghost);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:live 1.8s ease-out infinite}
+@keyframes live{70%{box-shadow:0 0 0 10px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+.lui-stats .section{background:transparent}
+.lui-stats .app-ghost-stat .stat-value{color:var(--ghost)}
+.lui-team .ot1{background:transparent}
+.lui-team .ot1__grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.lui-team .ot1__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lui-nf .error-page{background:transparent}
+/* champs que les composants laissent au style du navigateur */
+:where([class^="lui-"],[class*=" lui-"]) :where(input:not([type=checkbox]):not([type=radio]),textarea,select){background-color:var(--surf);color:var(--txt)}
+.lui-team .ot1__card.app-gone{filter:grayscale(1);opacity:.45}
+.lui-story .about-2,.lui-story .about-2__timeline{background:transparent}
+.lui-foot .footer{border-radius:0;margin:0;background:#050810;border-top:1px solid var(--line)}
+.lui-foot .app-access{color:#c7d2fe!important;font-weight:700}
+.lui-login,.lui-forgot,.lui-reset,.lui-nf{background:radial-gradient(120% 90% at 50% 0%,#1e1b4b 0%,#070b16 70%)}
+.lui-side{display:contents}
+.lui-side .sidebar{height:100vh;position:sticky;top:0;flex:none;background:#050810;border-right:1px solid var(--line)}
+.lui-side .sidebar__badge--lock{background:transparent;color:#94a3b8}
+.lui-toast .toast{border-left:0;margin-bottom:.75rem;border:1px solid var(--line)}
+.lui-toast .toast--ghost .toast-icon{background:rgba(52,211,153,.14);color:var(--ghost)}
+.lui-toast .toast-container{gap:0}
+.lui-tree .tree-view-anime{max-width:none}
+.lui-code .cb1{max-width:none;margin:0}
+.lui-code pre{white-space:pre-wrap;word-break:break-all;min-height:120px}
+.lui-vers .versioning-showcase{max-width:none;padding:0;background:transparent}
+.lui-kpi .kpi-showcase{max-width:none;padding:0;background:transparent}
+.lui-kpi .kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1200px){.lui-kpi .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.lui-kpi .kpi-grid{grid-template-columns:1fr}}
+.lui-kpi .app-alive .kpi-card__value{color:var(--ghost)}
+.lui-chart .page{background:transparent;padding:0}
+.lui-chart .failure-row__fill{transform-origin:left center;animation:grow .8s var(--ease-out) both;animation-delay:calc(150ms + var(--i,0) * 70ms)}
+@keyframes grow{from{transform:scaleX(0)}}
+.lui-acts .activity-history{background:transparent}
+.lui-vers .version-item.app-off{display:none}
+.lui-chat .messaging-container{max-width:none;height:620px}
+.lui-chat .message--typing{animation:typing 1.2s ease-in-out infinite}
+@keyframes typing{50%{opacity:.4}}
+.lui-chat .message{animation:app-in .3s var(--ease-out) both}
+.lui-cal .cv__wrap{max-width:none;background:transparent}
+.lui-cal .cv__cell--ghost .cv__day-num{color:var(--acc);font-weight:700}
+.lui-cal .cv__event{cursor:pointer}
+.lui-pdf .pdf-preview{height:640px}
+.lui-pdf .page-para{white-space:normal}
+.lui-otp .auth-card{margin:0 auto}
+.lui-err .alerts-container{margin:0}
+.lui-skel .skeleton-showcase,.lui-err .error-showcase,.lui-profile .user-cards-showcase{padding:0;max-width:none;background:none}
+.lui-acc .acc1{padding:56px 16px 24px;max-width:none;background:transparent}
+.lui-success .success-showcase{padding:0;background:none}
+.lui-success .success-card{max-width:460px;margin:0 auto;animation:pop-in .34s var(--ease-out) both}
+.lui-success .app-rank{width:92px;height:92px;font:700 2.6rem 'JetBrains Mono',monospace;color:#fff;background:linear-gradient(135deg,#6366f1,#a855f7);box-shadow:0 0 40px rgba(129,140,248,.55);opacity:0}
+.lui-success .app-rank.in{animation:rank-in .5s var(--ease-out) both}
+@keyframes rank-in{from{opacity:0;transform:scale(.8) rotate(-8deg)}to{opacity:1;transform:none}}
+.lui-success .app-badges{justify-content:center;flex-wrap:wrap;margin:1rem 0 1.25rem}
+.lui-success .app-badges .tag{animation:app-in .35s var(--ease-out) both;animation-delay:calc(700ms + var(--i,0) * 90ms)}
+.lui-confirm .confirmation-showcase{padding:0;min-height:0;background:none}
+@media(max-width:900px){
+  .lui-side .sidebar{width:72px}
+  .lui-chat .messaging-container{height:auto;min-height:560px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;animation-iteration-count:1!important}
+  [data-reveal]{transform:none;transition:opacity .2s ease}
+  .app-brief{transform:translate(-50%,0)}
+  .app-panel,.app-drop{transition-duration:.01ms}
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= 0. SITE PUBLIC ======================= -->
+<section class="app-view" id="v-intro">
+  <div class="lui-onb">
+    <div class="onboarding-container">
+      <div class="onboarding-card">
+        <div class="onboarding-progress">
+          <div class="progress-bar"><div class="progress-fill" id="onbFill" style="width:33%"></div></div>
+          <div class="progress-steps" id="onbDots">
+            <button class="step-dot active" data-step="0"><span>1</span></button>
+            <button class="step-dot" data-step="1"><span>2</span></button>
+            <button class="step-dot" data-step="2"><span>3</span></button>
+          </div>
+        </div>
+        <button class="skip-btn" id="onbSkip">Passer</button>
+        <div class="onboarding-content">
+          <div class="step-content" id="onb0">
+            <div class="step-icon"><i class="bi bi-moon-stars-fill"></i></div>
+            <h1 class="step-title">3 H 12</h1>
+            <p class="step-description">Olla, une startup de Cotonou, a fermé le 14 mars 2019. Son site est toujours en ligne. Et chaque nuit à 3 h 12, quelqu'un s'y connecte encore.</p>
+            <div class="features-list">
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Un compte supprimé</span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Une connexion chaque nuit</span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Aucune explication</span></div>
+            </div>
+          </div>
+          <div class="step-content hidden" id="onb1">
+            <div class="step-icon"><i class="bi bi-flag-fill"></i></div>
+            <h1 class="step-title">Ta mission</h1>
+            <p class="step-description">Entre dans l'espace de travail d'Olla, découvre qui s'y connecte, et trouve le flag.</p>
+            <div class="features-list">
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Le flag a la forme <span class="app-flag">LUI{...}</span></span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Il est découpé en 3 fragments cachés dans l'appli</span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Note chaque fragment dès que tu le trouves</span></div>
+            </div>
+          </div>
+          <div class="step-content hidden" id="onb2">
+            <div class="step-icon"><i class="bi bi-search"></i></div>
+            <h1 class="step-title">Comment jouer</h1>
+            <p class="step-description">Tout se joue ici, dans le navigateur, en 15 minutes environ. Aucune compétence technique requise.</p>
+            <div class="features-list">
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Lis, clique, fouille : chaque écran cache un indice</span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>L'objectif en cours reste affiché en bas de l'écran</span></div>
+              <div class="feature-item"><i class="bi bi-check-circle-fill"></i><span>Bloqué ? Le bouton Indice t'aide, 3 indices par étape</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="onboarding-actions">
+          <button class="btn btn--secondary hidden" id="onbPrev">Précédent</button>
+          <button class="btn btn--primary" id="onbNext">Suivant</button>
+          <button class="btn btn--success hidden" id="onbGo"><i class="bi bi-play-fill"></i> Commencer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="app-view" id="v-site">
+  <div class="lui-cs">
+    <div class="cs1">
+      <div class="cs1__inner">
+        <div class="cs1__badge"><i class="bi bi-moon-stars-fill"></i> Fermé depuis le 14 mars 2019</div>
+        <h1>Olla a fermé ses portes.</h1>
+        <p>Trois ans à organiser le travail de 214 équipes, depuis Cotonou. Merci pour tout.</p>
+        <p class="app-cs-k">Prochaine connexion de <span class="app-ghost-name">m.dossou</span> dans</p>
+        <div class="cs1__countdown">
+          <div class="cs1__unit"><span class="cs1__val" id="cdH">00</span><span class="cs1__lbl">Heures</span></div>
+          <span class="cs1__sep">:</span>
+          <div class="cs1__unit"><span class="cs1__val" id="cdM">00</span><span class="cs1__lbl">Minutes</span></div>
+          <span class="cs1__sep">:</span>
+          <div class="cs1__unit"><span class="cs1__val" id="cdS">00</span><span class="cs1__lbl">Secondes</span></div>
+        </div>
+        <div class="app-live"><span class="app-dot"></span><span><b>1 utilisateur</b> connecté en ce moment</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lui-stats" id="stats">
+    <div class="section section--white">
+      <div class="section-header" data-reveal>
+        <span class="section-badge"><i class="bi bi-bar-chart"></i> Olla en chiffres</span>
+        <h2>Trois ans, puis le silence</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card" data-reveal style="--d:0ms"><div class="stat-value">214</div><div class="stat-label">Équipes accompagnées</div><div class="stat-divider"></div></div>
+        <div class="stat-card" data-reveal style="--d:80ms"><div class="stat-value">3 ans</div><div class="stat-label">D'activité</div><div class="stat-divider"></div></div>
+        <div class="stat-card" data-reveal style="--d:160ms"><div class="stat-value">12</div><div class="stat-label">Personnes</div><div class="stat-divider"></div></div>
+        <div class="stat-card app-ghost-stat" data-reveal style="--d:240ms"><div class="stat-value" id="ghostStat">1</div><div class="stat-label">Utilisateur actif</div><div class="stat-divider"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lui-team" id="team">
+    <div class="ot1">
+      <div class="ot1__header" data-reveal>
+        <h2>Notre équipe</h2>
+        <p>Les quatre personnes qui ont fait tourner Olla.</p>
+      </div>
+      <div class="ot1__grid">
+        <div class="ot1__card" data-reveal style="--d:0ms">
+          <div class="ot1__avatar" style="background:#6366f1;">SA</div>
+          <h3>Sika Adjovi</h3>
+          <div class="role">Fondatrice · sika@olla.bj</div>
+          <div class="ot1__socials"><a class="ot1__social" href="#"><i class="bi bi-envelope"></i></a><a class="ot1__social" href="#"><i class="bi bi-linkedin"></i></a></div>
+        </div>
+        <div class="ot1__card app-gone" data-reveal style="--d:80ms">
+          <div class="ot1__avatar" style="background:#374151;">MD</div>
+          <h3>Mawuli Dossou</h3>
+          <div class="role">CTO · compte supprimé</div>
+          <div class="ot1__socials"><a class="ot1__social" href="#"><i class="bi bi-person-x"></i></a></div>
+        </div>
+        <div class="ot1__card" data-reveal style="--d:160ms">
+          <div class="ot1__avatar" style="background:#ec4899;">AB</div>
+          <h3>Aïcha Bello</h3>
+          <div class="role">Design · aicha@olla.bj</div>
+          <div class="ot1__socials"><a class="ot1__social" href="#"><i class="bi bi-envelope"></i></a><a class="ot1__social" href="#"><i class="bi bi-linkedin"></i></a></div>
+        </div>
+        <div class="ot1__card" data-reveal style="--d:240ms">
+          <div class="ot1__avatar" style="background:#10b981;">KM</div>
+          <h3>Kodjo Mensah</h3>
+          <div class="role">Commercial · kodjo@olla.bj</div>
+          <div class="ot1__socials"><a class="ot1__social" href="#"><i class="bi bi-envelope"></i></a><a class="ot1__social" href="#"><i class="bi bi-linkedin"></i></a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lui-story" id="story">
+    <section class="about-2">
+      <div class="about-2__timeline">
+        <h2 class="about-2__section-title" data-reveal>Notre histoire</h2>
+        <div class="about-2__tl-items">
+          <div class="about-2__tl-item" data-reveal style="--d:0ms"><div class="about-2__tl-year">2016</div><div class="about-2__tl-dot"></div><div class="about-2__tl-label">Tout commence sous un bureau, sur un vieux PC qu'on appelait Baobab</div></div>
+          <div class="about-2__tl-item right" data-reveal style="--d:90ms"><div class="about-2__tl-year">2017</div><div class="about-2__tl-dot"></div><div class="about-2__tl-label">Premier client. Puis dix.</div></div>
+          <div class="about-2__tl-item" data-reveal style="--d:180ms"><div class="about-2__tl-year">2018</div><div class="about-2__tl-dot"></div><div class="about-2__tl-label">Douze personnes, 214 équipes</div></div>
+          <div class="about-2__tl-item right" data-reveal style="--d:270ms"><div class="about-2__tl-year">2019</div><div class="about-2__tl-dot"></div><div class="about-2__tl-label">On éteint la lumière</div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="lui-foot">
+    <footer class="footer footer--simple">
+      <div class="simple-top">
+        <div class="logo-row" style="display:flex;align-items:center;gap:.75rem">
+          <div class="logo" style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem">O</div>
+          <span style="font-size:1.1rem;font-weight:700;color:#f9fafb">Olla</span>
+        </div>
+        <div class="simple-links">
+          <a href="#team">Équipe</a>
+          <a href="#story">Histoire</a>
+          <a href="#" data-go="notfound">Carrières</a>
+          <a href="#" data-go="login" class="app-access">Accès équipe</a>
+        </div>
+      </div>
+      <div class="simple-bottom">
+        <span>© 2019 Olla. Fermé, mais pas éteint.</span>
+        <div class="footer-social"><a href="#"><i class="bi bi-twitter-x"></i></a><a href="#"><i class="bi bi-linkedin"></i></a><a href="#"><i class="bi bi-github"></i></a></div>
+      </div>
+    </footer>
+  </div>
+</section>
+
+<!-- ======================= 1. CONNEXION ======================= -->
+<section class="app-view" id="v-login">
+  <div class="lui-login">
+    <div class="auth-container">
+      <div class="auth-branding">
+        <div class="auth-branding__content">
+          <div class="auth-branding__logo"></div>
+          <h1 class="auth-branding__title">Olla</h1>
+          <p class="auth-branding__subtitle">L'espace de travail de ton équipe. Archivé depuis le 14 mars 2019.</p>
+          <div class="auth-branding__features">
+            <div class="feature"><i class="bi bi-check-circle-fill"></i><span>Lecture seule</span></div>
+            <div class="feature"><i class="bi bi-check-circle-fill"></i><span>Données conservées</span></div>
+            <div class="feature"><i class="bi bi-check-circle-fill"></i><span>1 utilisateur connecté</span></div>
+          </div>
+        </div>
+        <div class="auth-branding__decoration"><div class="circle circle--1"></div><div class="circle circle--2"></div><div class="circle circle--3"></div></div>
+      </div>
+      <div class="auth-form-wrapper">
+        <div class="auth-form">
+          <div class="auth-form__header">
+            <h2 class="auth-form__title">Accès équipe</h2>
+            <p class="auth-form__subtitle">Entrez vos identifiants pour continuer</p>
+          </div>
+          <div class="alert alert--error" id="loginAlert">
+            <i class="bi bi-exclamation-circle"></i><span id="loginAlertText"></span>
+            <button class="alert__close" type="button" data-close-alert="loginAlert"><i class="bi bi-x"></i></button>
+          </div>
+          <form class="form" id="loginForm" novalidate>
+            <div class="form-group">
+              <label class="form-label"><span>Adresse email</span></label>
+              <div class="input-wrapper"><i class="bi bi-envelope input-icon"></i><input type="email" class="form-input form-input--icon" placeholder="prenom@olla.bj" id="loginEmail" autocomplete="off"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span>Mot de passe</span><a href="#" class="form-label__link" data-go="forgot">Mot de passe oublié ?</a></label>
+              <div class="input-wrapper"><i class="bi bi-lock input-icon"></i><input type="password" class="form-input form-input--icon form-input--password" placeholder="••••••••" id="loginPwd"><button type="button" class="password-toggle" data-toggle-pwd="loginPwd"><i class="bi bi-eye"></i></button></div>
+            </div>
+            <div class="form-group form-group--inline">
+              <label class="checkbox"><input type="checkbox"><span class="checkbox__mark"></span><span class="checkbox__label">Se souvenir de moi</span></label>
+            </div>
+            <button type="submit" class="btn btn--primary btn--full"><span>Se connecter</span></button>
+          </form>
+          <div class="divider"><span>ou continuer avec</span></div>
+          <div class="social-buttons">
+            <button class="btn btn--social btn--google" data-readonly="Connexion Google désactivée depuis 2019."><i class="bi bi-google"></i><span>Google</span></button>
+            <button class="btn btn--social btn--github" data-readonly="Connexion GitHub désactivée depuis 2019."><i class="bi bi-github"></i><span>GitHub</span></button>
+          </div>
+          <p class="auth-form__footer">Pas encore de compte ? <a href="#" data-readonly="Les inscriptions sont fermées.">Inscriptions fermées</a></p>
+          <p class="auth-form__footer"><a href="#" data-go="site">Retour au site d'Olla</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 1b. MOT DE PASSE OUBLIÉ ======================= -->
+<section class="app-view" id="v-forgot">
+  <div class="lui-forgot">
+    <div class="auth-card">
+      <div class="request-form" id="forgotA">
+        <h1 class="auth-card__title">Mot de passe oublié ?</h1>
+        <p class="auth-card__subtitle">Indiquez l'adresse email du compte.</p>
+        <div class="alert alert--error" id="forgotAAlert"><i class="bi bi-exclamation-circle"></i><span></span></div>
+        <form class="form" id="forgotAForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">Adresse email</label>
+            <div class="input-wrapper"><i class="bi bi-envelope input-icon"></i><input type="email" class="form-input form-input--icon" placeholder="prenom@olla.bj" id="forgotEmail" autocomplete="off"></div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full"><i class="bi bi-send"></i><span>Continuer</span></button>
+        </form>
+        <a href="#" class="back-link" data-go="login"><span>Retour à la connexion</span></a>
+        <a href="#" class="back-link" data-go="site"><i class="bi bi-globe"></i><span>Voir le site d'Olla</span></a>
+      </div>
+      <div class="request-form hidden" id="forgotB">
+        <h1 class="auth-card__title">Question secrète</h1>
+        <p class="auth-card__subtitle">Le service d'envoi d'emails n'est plus actif. Répondez à la question de sécurité du compte. La réponse se trouve sur le site d'Olla.</p>
+        <div class="alert alert--error" id="forgotBAlert"><i class="bi bi-exclamation-circle"></i><span></span></div>
+        <form class="form" id="forgotBForm" novalidate>
+          <div class="form-group">
+            <label class="form-label">Le nom de notre tout premier serveur ?</label>
+            <div class="input-wrapper"><i class="bi bi-hdd input-icon"></i><input type="text" class="form-input form-input--icon" id="forgotAnswer" autocomplete="off"></div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full"><i class="bi bi-shield-check"></i><span>Valider</span></button>
+        </form>
+        <a href="#" class="back-link" data-go="login"><span>Retour à la connexion</span></a>
+        <a href="#" class="back-link" data-go="site"><i class="bi bi-globe"></i><span>Voir le site d'Olla</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 1c. NOUVEAU MOT DE PASSE ======================= -->
+<section class="app-view" id="v-reset">
+  <div class="lui-reset">
+    <div class="auth-card">
+      <div class="reset-form" id="resetForm">
+        <h1 class="auth-card__title">Nouveau mot de passe</h1>
+        <p class="auth-card__subtitle">Choisissez un mot de passe pour le compte de Sika.</p>
+        <div class="alert alert--error" id="resetAlert"><i class="bi bi-exclamation-circle"></i><span></span></div>
+        <form class="form" id="resetFormEl" novalidate>
+          <div class="form-group">
+            <label class="form-label">Nouveau mot de passe</label>
+            <div class="input-wrapper"><i class="bi bi-lock input-icon"></i><input type="password" class="form-input form-input--icon form-input--password" placeholder="••••••••" id="resetPwd"><button type="button" class="password-toggle" data-toggle-pwd="resetPwd"><i class="bi bi-eye"></i></button></div>
+            <div class="password-strength"><div class="password-strength__bar"><div class="password-strength__segment"></div><div class="password-strength__segment"></div><div class="password-strength__segment"></div><div class="password-strength__segment"></div></div><span class="password-strength__text" id="strengthText"></span></div>
+            <div class="password-criteria">
+              <div class="criteria-item" data-crit="len"><i class="bi bi-circle"></i><span>Au moins 4 caractères</span></div>
+              <div class="criteria-item" data-crit="num"><i class="bi bi-circle"></i><span>Un chiffre</span></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmer le mot de passe</label>
+            <div class="input-wrapper"><i class="bi bi-lock input-icon"></i><input type="password" class="form-input form-input--icon form-input--password" placeholder="••••••••" id="resetPwd2"><button type="button" class="password-toggle" data-toggle-pwd="resetPwd2"><i class="bi bi-eye"></i></button></div>
+            <div class="form-error" id="matchError">Les mots de passe ne correspondent pas</div>
+            <div class="form-success" id="matchSuccess"><i class="bi bi-check-circle"></i>Les mots de passe correspondent</div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full"><i class="bi bi-check-lg"></i><span>Réinitialiser le mot de passe</span></button>
+        </form>
+      </div>
+      <div class="success-state" id="resetSuccess">
+        <div class="success-state__icon"><i class="bi bi-check-lg"></i></div>
+        <h2 class="success-state__title">Mot de passe modifié !</h2>
+        <p class="success-state__text">Le compte de Sika est de nouveau accessible.</p>
+        <a href="#" class="btn btn--primary btn--full" data-go="login"><i class="bi bi-box-arrow-in-right"></i><span>Se connecter</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 404 ======================= -->
+<section class="app-view" id="v-notfound">
+  <div class="lui-nf">
+    <div class="error-page error-404">
+      <div class="error-content">
+        <div class="error-illustration">
+          <div class="error-code"><span class="digit">4</span><span class="digit zero"><i class="bi bi-search"></i></span><span class="digit">4</span></div>
+          <div class="floating-elements">
+            <i class="bi bi-file-earmark floating-icon icon-1"></i>
+            <i class="bi bi-folder floating-icon icon-2"></i>
+            <i class="bi bi-question-circle floating-icon icon-3"></i>
+          </div>
+        </div>
+        <div class="error-message">
+          <h1>Page introuvable</h1>
+          <p>Mawuli n'est pas ici non plus.</p>
+        </div>
+        <div class="error-search">
+          <div class="search-box"><i class="bi bi-search"></i><input type="text" id="nfSearch" placeholder="Rechercher sur le site..."><button class="search-btn" id="nfSearchBtn"><i class="bi bi-search"></i></button></div>
+        </div>
+        <div class="error-actions">
+          <button class="btn btn--primary" data-go="site"><i class="bi bi-house"></i> Retour à l'accueil</button>
+          <button class="btn btn--outline" data-go="login"><i class="bi bi-box-arrow-in-right"></i> Accès équipe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 2. ESPACE OLLA ======================= -->
+<section class="app-view" id="v-app">
+  <div class="app-shell">
+    <div class="lui-side">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar__header">
+          <div class="sidebar__logo"><span class="sidebar__logo-icon"><i class="bi bi-circle-half"></i></span><span class="sidebar__logo-text">Olla</span></div>
+          <button class="sidebar__toggle" id="toggleSidebar" aria-label="Réduire"><i class="bi bi-chevron-left"></i></button>
+        </div>
+        <nav class="sidebar__nav">
+          <div class="sidebar__section">
+            <span class="sidebar__section-title">Espace</span>
+            <ul class="sidebar__menu">
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="dash"><i class="bi bi-grid-1x2-fill sidebar__link-icon"></i><span class="sidebar__link-text">Tableau de bord</span></a></li>
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="files"><i class="bi bi-folder-fill sidebar__link-icon"></i><span class="sidebar__link-text">Fichiers</span></a></li>
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="versions"><i class="bi bi-tags-fill sidebar__link-icon"></i><span class="sidebar__link-text">Versions</span></a></li>
+            </ul>
+          </div>
+          <div class="sidebar__section">
+            <span class="sidebar__section-title">Équipe</span>
+            <ul class="sidebar__menu">
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="msg"><i class="bi bi-chat-dots-fill sidebar__link-icon"></i><span class="sidebar__link-text">Messagerie</span><span class="sidebar__badge" id="msgBadge" style="display:none">1</span></a></li>
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="cal"><i class="bi bi-calendar3 sidebar__link-icon"></i><span class="sidebar__link-text">Calendrier</span></a></li>
+            </ul>
+          </div>
+          <div class="sidebar__section">
+            <span class="sidebar__section-title">Archives</span>
+            <ul class="sidebar__menu">
+              <li class="sidebar__menu-item"><a href="#" class="sidebar__link" data-page="vault"><i class="bi bi-safe2-fill sidebar__link-icon"></i><span class="sidebar__link-text">Coffre</span><span class="sidebar__badge sidebar__badge--lock" id="vaultLock"><i class="bi bi-lock-fill"></i></span></a></li>
+            </ul>
+          </div>
+        </nav>
+        <div class="sidebar__footer">
+          <div class="sidebar__user">
+            <div class="sidebar__user-avatar"><span>SA</span></div>
+            <div class="sidebar__user-info"><span class="sidebar__user-name">Sika Adjovi</span><span class="sidebar__user-role">Fondatrice</span></div>
+            <div class="sidebar__user-menu-wrapper">
+              <button class="sidebar__user-action" id="userMenuToggle" aria-label="Menu"><i class="bi bi-three-dots-vertical"></i></button>
+              <div class="sidebar__user-dropdown" id="userDropdown">
+                <a href="#" class="sidebar__user-dropdown-item" data-readonly="Profil en lecture seule."><i class="bi bi-person-circle"></i><span>Mon profil</span></a>
+                <div class="sidebar__user-dropdown-divider"></div>
+                <a href="#" class="sidebar__user-dropdown-item sidebar__user-dropdown-item--danger" id="logoutLink"><i class="bi bi-box-arrow-right"></i><span>Déconnexion</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <main class="app-main">
+      <div class="app-top">
+        <div id="hudSlot"></div>
+        <div class="app-actions">
+          <button class="app-btn" id="bellBtn" aria-label="Notifications"><i class="bi bi-bell"></i><span class="app-pill" id="bellPill">2</span></button>
+          <button class="app-btn app-btn--primary" id="flagBtn"><i class="bi bi-flag"></i> Soumettre le flag</button>
+          <div class="app-drop lui-notif" id="notifDrop">
+            <div class="nt">
+              <div class="nt__header"><span class="nt__title">Notifications</span><button class="nt__mark-read" id="markRead">Tout marquer comme lu</button></div>
+              <div class="nt__list" id="notifList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau de bord -->
+      <div class="app-page" id="p-dash">
+        <div class="app-body">
+          <div class="lui-kpi">
+            <div class="kpi-showcase">
+              <h1 class="page-title">Tableau de bord</h1>
+              <p class="page-subtitle">Espace archivé, lecture seule</p>
+              <div class="kpi-grid">
+                <div class="kpi-card kpi-card--basic"><div class="kpi-card__icon kpi-card__icon--primary"><i class="bi bi-kanban"></i></div><div class="kpi-card__content"><span class="kpi-card__title">Projets actifs</span><span class="kpi-card__value">0</span><div class="kpi-card__change change--decrease"><span>-100%</span><span class="change-period">depuis 2019</span></div></div></div>
+                <div class="kpi-card kpi-card--basic"><div class="kpi-card__icon kpi-card__icon--primary"><i class="bi bi-check2-square"></i></div><div class="kpi-card__content"><span class="kpi-card__title">Tâches ouvertes</span><span class="kpi-card__value">0</span><div class="kpi-card__change change--decrease"><span>-100%</span><span class="change-period">depuis 2019</span></div></div></div>
+                <div class="kpi-card kpi-card--basic app-alive"><div class="kpi-card__icon kpi-card__icon--success"><i class="bi bi-person-fill"></i></div><div class="kpi-card__content"><span class="kpi-card__title">Utilisateurs actifs</span><span class="kpi-card__value">1</span><div class="kpi-card__change change--increase"><span>+1</span><span class="change-period">chaque nuit</span></div></div></div>
+                <div class="kpi-card kpi-card--basic"><div class="kpi-card__icon kpi-card__icon--warning"><i class="bi bi-moon-stars-fill"></i></div><div class="kpi-card__content"><span class="kpi-card__title">Dernière activité</span><span class="kpi-card__value">03:12</span><div class="kpi-card__change change--increase"><span id="kpiLast">cette nuit</span></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="app-grid2">
+            <div class="lui-chart">
+              <div class="page">
+                <section class="failure-card">
+                  <h2 class="failure-card__title">Activité par heure, 30 derniers jours</h2>
+                  <ul class="failure-list" id="chartList" role="list"></ul>
+                </section>
+              </div>
+            </div>
+            <div class="lui-acts">
+              <div class="activity-history">
+                <div class="activity-header"><div><h2>Historique d'activité</h2><span class="activity-count" id="actCount"></span></div></div>
+                <div class="filter-bar" id="actFilters">
+                  <button class="filter-btn active" data-filter="all">Toutes</button>
+                  <button class="filter-btn" data-filter="login">Connexions</button>
+                  <button class="filter-btn" data-filter="update">Fichiers</button>
+                </div>
+                <div id="actList"></div>
+                <div class="load-more" id="actMore" style="display:flex"><button>Charger plus</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fichiers -->
+      <div class="app-page" id="p-files">
+        <div class="app-body">
+          <h1 class="app-h">Fichiers</h1>
+          <div class="lui-check">
+            <div class="checkbox-showcase">
+              <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" id="showHidden"><span class="checkbox-custom"><i class="bi bi-check"></i></span><span class="checkbox-text">Afficher les fichiers cachés</span></label>
+              </div>
+            </div>
+          </div>
+          <div class="app-grid2" id="filesWrap">
+            <div class="lui-tree"><div class="tree-view-anime"><div id="treeRoot"></div></div></div>
+            <div class="lui-code">
+              <div class="cb1">
+                <div class="cb1__header"><span class="cb1__lang" id="codeName">Aucun fichier</span><button class="cb1__copy" id="copyBtn"><i class="bi bi-clipboard"></i><span id="copyText">Copier</span></button></div>
+                <div class="cb1__body"><pre id="codeBody"><span class="cm">// Sélectionne un fichier dans l'arborescence</span></pre></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Versions -->
+      <div class="app-page" id="p-versions">
+        <div class="app-body">
+          <div class="lui-vers">
+            <div class="versioning-showcase">
+              <h1 class="page-title">Historique des versions</h1>
+              <p class="page-subtitle">Toutes les versions d'Olla, de 2016 à la fermeture</p>
+              <div class="version-controls">
+                <div class="search-wrapper"><i class="bi bi-search"></i><input type="text" class="search-input" placeholder="Rechercher une version..." id="versSearch"></div>
+                <div class="filter-tabs" id="versTabs">
+                  <button class="filter-tab active" data-filter="all">Toutes</button>
+                  <button class="filter-tab" data-filter="major">Majeures</button>
+                  <button class="filter-tab" data-filter="minor">Mineures</button>
+                  <button class="filter-tab" data-filter="patch">Patches</button>
+                  <button class="filter-tab" data-filter="draft">Brouillons</button>
+                </div>
+              </div>
+              <div class="version-timeline" id="versList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messagerie -->
+      <div class="app-page" id="p-msg">
+        <div class="app-body">
+          <div class="lui-chat">
+            <div class="messaging-container">
+              <div class="messaging-sidebar">
+                <div class="sidebar-header"><h2 class="sidebar-title">Messages</h2><button class="new-message-btn" data-readonly="Messagerie en lecture seule."><i class="bi bi-pencil-square"></i></button></div>
+                <div class="search-wrapper"><i class="bi bi-search"></i><input type="text" class="search-input" placeholder="Rechercher..." id="chatSearch"></div>
+                <div class="contact-list" id="contactList"></div>
+              </div>
+              <div class="chat-area" id="chatArea" style="display:none">
+                <div class="chat-header">
+                  <div class="chat-contact">
+                    <div class="contact-avatar"><span class="avatar-initials" id="chatInit"></span><span class="status-dot" id="chatDot"></span></div>
+                    <div class="contact-details"><span class="contact-name" id="chatName"></span><span class="contact-status" id="chatStatus"></span></div>
+                  </div>
+                  <div class="chat-actions"><button class="action-btn" data-readonly="Appels désactivés."><i class="bi bi-telephone"></i></button><button class="action-btn" data-readonly="Appels désactivés."><i class="bi bi-camera-video"></i></button></div>
+                </div>
+                <div class="messages-container" id="msgList"></div>
+                <div class="input-area">
+                  <div class="input-actions"><button class="input-btn"><i class="bi bi-plus-lg"></i></button><button class="input-btn"><i class="bi bi-image"></i></button><button class="input-btn"><i class="bi bi-paperclip"></i></button></div>
+                  <div class="input-wrapper"><input type="text" class="message-input" placeholder="Écrire un message..." id="msgInput"><button class="emoji-btn"><i class="bi bi-emoji-smile"></i></button></div>
+                  <button class="send-btn" id="sendBtn" disabled><i class="bi bi-send-fill"></i></button>
+                </div>
+              </div>
+              <div class="empty-state" id="chatEmpty" style="display:flex">
+                <div class="empty-icon"><i class="bi bi-chat-dots"></i></div>
+                <h3>Sélectionnez une conversation</h3>
+                <p>Les messages d'Olla sont conservés en lecture seule</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendrier -->
+      <div class="app-page" id="p-cal">
+        <div class="app-body">
+          <div class="lui-cal">
+            <div class="cv__wrap">
+              <div class="cv__cal-header">
+                <div class="cv__cal-left">
+                  <div class="cv__month-badge"><span class="cv__month-num" id="todayNum"></span></div>
+                  <div><h2 class="cv__month-title" id="monthTitle"></h2><p class="cv__month-range" id="monthRange"></p></div>
+                </div>
+                <div class="cv__cal-right">
+                  <button class="cv__icon-btn" title="Rechercher" id="calSearchBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                  <button class="cv__nav-btn" id="prevBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                  <button class="cv__today-btn" id="todayBtn">Aujourd'hui</button>
+                  <button class="cv__nav-btn" id="nextBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+                  <button class="cv__view-btn">Mois</button>
+                  <button class="cv__add-btn" data-readonly="Calendrier en lecture seule."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Ajouter</button>
+                </div>
+              </div>
+              <div class="app-search" id="calSearch">
+                <input class="cv__input" type="text" id="calQuery" placeholder="Rechercher un événement (ex. commit, fermeture)">
+                <div id="calResults"></div>
+              </div>
+              <div class="cv__weekdays"><div class="cv__weekday">Lun</div><div class="cv__weekday">Mar</div><div class="cv__weekday">Mer</div><div class="cv__weekday">Jeu</div><div class="cv__weekday">Ven</div><div class="cv__weekday">Sam</div><div class="cv__weekday">Dim</div></div>
+              <div class="cv__grid" id="calGrid"></div>
+            </div>
+            <div class="cv__modal-overlay hidden" id="calModal">
+              <div class="cv__modal">
+                <div class="cv__modal-header"><h3 id="calModalTitle">Événement</h3><button class="cv__modal-close" data-close-cal><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>
+                <div class="cv__modal-body">
+                  <div class="cv__field"><label class="cv__label">Titre</label><input class="cv__input" type="text" id="calFTitle" disabled></div>
+                  <div class="cv__field-row">
+                    <div class="cv__field"><label class="cv__label">Date</label><input class="cv__input" type="text" id="calFDate" disabled></div>
+                    <div class="cv__field"><label class="cv__label">Heure</label><input class="cv__input" type="text" id="calFTime" disabled></div>
+                  </div>
+                  <div class="cv__field"><label class="cv__label">Note</label><input class="cv__input" type="text" id="calFNote" disabled></div>
+                </div>
+                <div class="cv__modal-footer"><div class="cv__modal-footer-right"><button class="cv__btn cv__btn--ghost" data-close-cal>Fermer</button></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coffre -->
+      <div class="app-page" id="p-vault">
+        <div class="app-body">
+          <div class="lui-otp" id="vaultLocked">
+            <div class="app-center">
+              <div class="auth-card">
+                <div class="otp-form">
+                  <h1 class="auth-card__title">Coffre de Mawuli</h1>
+                  <p class="auth-card__subtitle">Saisissez le code à 6 chiffres<br><strong>1 document chiffré</strong></p>
+                  <div class="alert alert--error" id="otpAlert"><i class="bi bi-exclamation-circle"></i><span>Code incorrect.</span></div>
+                  <div class="otp-container">
+                    <div class="otp-inputs" id="otpInputs"></div>
+                    <div class="otp-loading" id="otpLoading"><span class="spinner"></span><span>Vérification...</span></div>
+                  </div>
+                  <div class="help-section">
+                    <a href="#" class="help-link" data-open-hints><i class="bi bi-question-circle"></i>Besoin d'aide ?</a>
+                    <a href="#" class="help-link" data-page="dash">Retour</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="lui-pdf" id="vaultOpen" style="display:none">
+            <div class="pdf-preview">
+              <div class="pdf-toolbar">
+                <div class="toolbar-left"><div class="zoom-badge">100%</div></div>
+                <div class="toolbar-center"><div class="page-counter"><span class="page-current">1</span><span class="page-sep">/</span><span class="page-total">1</span></div></div>
+                <div class="toolbar-right"><span class="doc-name">lettre.pdf</span></div>
+              </div>
+              <div class="pdf-body">
+                <div class="pdf-sidebar"><div class="thumb-item active"><div class="thumb-page"><div class="thumb-title-line"></div><div class="thumb-line" style="width:78%"></div><div class="thumb-line" style="width:95%"></div><div class="thumb-page-num">1</div></div><span class="thumb-label">Page 1</span></div></div>
+                <div class="pdf-canvas-zone">
+                  <div class="pdf-page-wrap">
+                    <div class="pdf-page">
+                      <div class="page-header"><div class="page-header-logo"><div class="logo-icon"><i class="bi bi-envelope-paper" style="color:#ef4444"></i></div><span class="logo-text">Pour Sika</span></div><span class="page-header-num">Page 1</span></div>
+                      <h1 class="page-title">Sika,</h1>
+                      <div class="title-rule"></div>
+                      <p class="page-para">Si quelqu'un lit ceci, c'est que quelqu'un est revenu.</p>
+                      <p class="page-para">Le soir de la fermeture, j'ai écrit un petit script. Je l'ai appelé le Veilleur. Chaque nuit à 3 h 12, l'heure de mon dernier commit, il rouvre Olla, relit le journal et attend.</p>
+                      <p class="page-para">Pas de fantôme. Quelques lignes de code et beaucoup d'entêtement. Je ne voulais pas qu'Olla s'éteigne tant que personne ne serait revenu la voir.</p>
+                      <p class="page-para">Maintenant que tu es là, il peut s'arrêter.</p>
+                      <p class="page-para"><strong>Mawuli</strong></p>
+                      <p class="page-para" style="font-family:'JetBrains Mono',monospace;color:#4f46e5">Fragment 3 : un_fantome}</p>
+                      <div class="page-footer"><span>Confidentiel</span><span>Mawuli Dossou · 14 mars 2019, 03:12</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- ======================= OVERLAYS ======================= -->
+
+<!-- Profil du compte fantôme : skeleton -> profil -> erreur -->
+<div class="app-ovl" id="profileOvl">
+  <div class="app-card">
+    <button class="app-x" data-close-ovl="profileOvl"><i class="bi bi-x-lg"></i></button>
+    <div class="lui-skel" id="pfSkel">
+      <div class="skeleton-showcase">
+        <div class="profile-skeleton">
+          <div class="profile-header">
+            <div class="skeleton skeleton--avatar-lg"></div>
+            <div class="profile-info">
+              <div class="skeleton skeleton--title"></div>
+              <div class="skeleton skeleton--text skeleton--short"></div>
+              <div class="profile-stats"><div class="skeleton skeleton--stat"></div><div class="skeleton skeleton--stat"></div><div class="skeleton skeleton--stat"></div></div>
+            </div>
+          </div>
+          <div class="profile-actions"><div class="skeleton skeleton--btn"></div><div class="skeleton skeleton--btn"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lui-profile" id="pfReal" style="display:none">
+      <div class="user-cards-showcase">
+        <div class="horizontal-grid">
+          <div class="user-card user-card--horizontal">
+            <div class="avatar avatar--lg"><span class="avatar-text">MD</span><span class="status-indicator status--online"></span></div>
+            <div class="card-main">
+              <div class="card-info"><h3 class="user-name">Mawuli Dossou</h3><p class="user-role">CTO • Plateforme</p><p class="user-location"><i class="bi bi-eye-slash"></i> « Cherche ce qui est caché. »</p></div>
+              <div class="card-stats">
+                <div class="stat"><span class="stat-value">0</span><span class="stat-label">Projets</span></div>
+                <div class="stat"><span class="stat-value">0</span><span class="stat-label">Tâches</span></div>
+                <div class="stat"><span class="stat-value" id="pfNights">0</span><span class="stat-label">Nuits</span></div>
+              </div>
+            </div>
+            <div class="card-actions"><button class="btn btn--primary btn--sm"><i class="bi bi-eye"></i> Profil</button><button class="btn btn--outline btn--sm"><i class="bi bi-chat"></i></button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="lui-err" id="pfErr" style="display:none">
+      <div class="error-showcase">
+        <div class="alerts-container">
+          <div class="alert alert--error">
+            <div class="alert-icon"><i class="bi bi-person-x-fill"></i></div>
+            <div class="alert-content"><strong class="alert-title">Ce compte n'existe pas</strong><p class="alert-message">Le compte m.dossou a été supprimé le 14/03/2019 à 08:00.</p><button class="alert-action" data-close-ovl="profileOvl">Fermer</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Coffre ouvert -->
+<div class="lui-modal">
+  <div class="m1-open" id="vaultModal">
+    <div class="m1-card">
+      <button class="m1-close" data-close-m1><i class="bi bi-x"></i></button>
+      <div class="m1-icon"><i class="bi bi-unlock-fill"></i></div>
+      <h3>Coffre ouvert</h3>
+      <p>Un seul document : une lettre de Mawuli, datée de la nuit de la fermeture.</p>
+      <div class="m1-btns"><button class="btn-outline" data-close-m1>Fermer</button><button class="btn-primary" data-close-m1>Lire</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Flag : saisie puis confirmation -->
+<div class="lui-confirm">
+  <div class="confirmation-showcase">
+    <div class="dialog-overlay" id="flagOvl">
+      <div class="dialog dialog--info" id="flagDialog">
+        <div class="dialog-icon"><i class="bi bi-flag-fill" id="flagIcon"></i></div>
+        <div class="dialog-content">
+          <h3 class="dialog-title" id="flagTitle">Soumettre le flag</h3>
+          <p class="dialog-message" id="flagMsg">Format attendu : LUI{...}</p>
+          <div class="dialog-input" id="flagInputWrap"><input type="text" id="flagInput" placeholder="LUI{...}" autocomplete="off" spellcheck="false"></div>
+        </div>
+        <div class="dialog-actions">
+          <button class="btn btn--cancel" id="flagCancel">Annuler</button>
+          <button class="btn btn--info" id="flagOk">Vérifier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Indices -->
+<aside class="app-panel" id="hintPanel">
+  <button class="app-x" data-close-hints><i class="bi bi-x-lg"></i></button>
+  <div class="lui-acc">
+    <div class="acc1">
+      <div class="acc1__header"><h2>Indices</h2><p id="hintStep"></p></div>
+      <div class="acc1__list" id="hintList"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Toasts -->
+<div class="app-hud" id="hud">
+  <button class="app-hud-obj" id="hudObj" title="Revoir l'objectif"><span class="app-hud-step" id="hudStep">1/7</span><span class="app-hud-text" id="hudText"></span></button>
+  <div class="app-hud-frags" id="hudFrags"></div>
+  <div class="app-hud-score"><i class="bi bi-stars"></i><span id="hudScore">1 000</span></div>
+  <button class="app-hud-hint" data-open-hints><i class="bi bi-lightbulb"></i> Indice</button>
+</div>
+<div class="app-brief" id="brief"><span class="app-brief-k" id="briefK"></span><p id="briefT"></p></div>
+<div class="app-fragpop" id="fragPop"><i class="bi bi-puzzle-fill"></i><span class="k" id="fragPopK"></span><span class="v" id="fragPopV"></span><span class="s" id="fragPopS"></span><br><span class="pts">+100 pts</span></div>
+<div class="app-flicker" id="flicker"></div>
+
+<div class="app-toasts lui-toast"><div class="toast-container" id="toasts"></div></div>
+
+<!-- Fin -->
+<div class="app-end" id="endOvl">
+  <div class="lui-success">
+    <div class="success-showcase">
+      <div class="success-card">
+        <div class="card-icon app-rank" id="endRank">S</div>
+        <h3 class="card-title" id="endTitle"></h3>
+        <p class="card-message">Le Veilleur s'est arrêté. Olla peut enfin dormir.</p>
+        <div class="card-details">
+          <div class="detail"><span class="detail-label">Score</span><span class="detail-value" id="endScore">0</span></div>
+          <div class="detail"><span class="detail-label">Temps</span><span class="detail-value" id="endTime">--</span></div>
+          <div class="detail"><span class="detail-label">Bonus temps</span><span class="detail-value" id="endBonus">0</span></div>
+          <div class="detail"><span class="detail-label">Indices</span><span class="detail-value" id="endHints">0</span></div>
+        </div>
+        <div class="lui-tag"><div class="tags-row app-badges" id="endBadges"></div></div>
+        <div class="card-actions">
+          <button class="btn btn--primary" id="shareBtn">Partager mon rang</button>
+          <button class="btn btn--outline" id="replayBtn">Rejouer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="dev"></div>
+
+<script>
+/* ===================== état ===================== */
+const KEY='olla312', FLAG_SHA='6845d2dd2c7a1bec35611b197099a25ee749640b6a17e032062a983e5968859f', MAIL='sika@olla.bj';
+const fresh=()=>({view:'intro',lastStep:0,score:1000,wrong:0,saw404:false,page:'dash',forgot:false,pwd:null,logged:false,profile:false,f1:false,f2:false,f3:false,typed:false,done:false,hints:{},start:Date.now(),end:null,once:{}});
+let S;try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=fresh()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const pad=n=>String(n).padStart(2,'0');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const later=(ms,f)=>setTimeout(f,ms);
+
+/* ===================== navigation ===================== */
+function go(v){
+  if(v==='app'&&!S.logged)v='login';
+  if(v==='login')S.sawLogin=true;
+  if(v==='notfound')S.saw404=true;
+  const hud=$('#hud');if(v==='app'){$('#hudSlot').appendChild(hud);hud.classList.remove('is-fixed')}else{document.body.appendChild(hud);hud.classList.add('is-fixed')}
+  if(v==='forgot'){S.forgot=true;forgotStep('A')}
+  if(v==='reset'){$('#resetForm').style.display='';$('#resetSuccess').classList.remove('show')}
+  S.view=v;save();
+  $$('.app-view').forEach(e=>e.classList.toggle('on',e.id==='v-'+v));
+  window.scrollTo(0,0);
+  if(v==='site'){revealScan();if(!S.once.site)later(9000,()=>{if(S.view==='site'&&!S.once.site){S.once.site=1;save();toast('m.dossou',"s'est connecté.",'bi-box-arrow-in-right',true)}})}
+  if(v==='app')page(S.page);
+  hintsRender();
+}
+function page(p){
+  S.page=p;save();
+  $$('.app-page').forEach(e=>e.classList.toggle('on',e.id==='p-'+p));
+  $$('.sidebar__link[data-page]').forEach(e=>e.classList.toggle('active',e.dataset.page===p));
+  if(p==='dash'){renderActs();renderChart();restagger('.lui-kpi .kpi-grid')}
+  if(p==='cal')renderCal();
+  if(p==='vault')renderVault();
+  if(p==='files'&&!S.once.files)later(6000,()=>{if(S.page==='files'&&!S.once.files){S.once.files=1;save();toast('m.dossou','consulte /veille en même temps que toi.','bi-eye',true)}});
+  hintsRender();
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){e.preventDefault();go(g.dataset.go)}
+  const p=e.target.closest('[data-page]');if(p){e.preventDefault();page(p.dataset.page)}
+  const r=e.target.closest('[data-readonly]');if(r){e.preventDefault();toast('Olla',r.dataset.readonly,'bi-lock')}
+  const t=e.target.closest('[data-toggle-pwd]');if(t){const i=document.getElementById(t.dataset.togglePwd);i.type=i.type==='password'?'text':'password';t.querySelector('i').className='bi '+(i.type==='password'?'bi-eye':'bi-eye-slash')}
+  const a=e.target.closest('[data-close-alert]');if(a)$('#'+a.dataset.closeAlert).classList.remove('show');
+  const o=e.target.closest('[data-close-ovl]');if(o)$('#'+o.dataset.closeOvl).classList.remove('on');
+  if(e.target.closest('[data-close-m1]'))$('#vaultModal').classList.remove('visible');
+  if(e.target.closest('[data-close-cal]'))$('#calModal').classList.add('hidden');
+  if(e.target.closest('[data-open-hints]')){e.preventDefault();$('#hintPanel').classList.add('on')}
+  if(e.target.closest('[data-close-hints]'))$('#hintPanel').classList.remove('on');
+  if(!e.target.closest('#notifDrop')&&!e.target.closest('#bellBtn'))$('#notifDrop').classList.remove('on');
+  if(!e.target.closest('.sidebar__user-menu-wrapper'))$('#userDropdown').classList.remove('show','active','open');
+});
+
+/* ===================== toasts (message de succès) ===================== */
+function flicker(){const f=$('#flicker');f.classList.remove('on');void f.offsetWidth;f.classList.add('on')}
+function glitch(el){if(!el)return;el.classList.remove('app-glitch');void el.offsetWidth;el.classList.add('app-glitch')}
+function restagger(sel){const g=$(sel);if(!g)return;g.classList.remove('app-stagger');[...g.children].forEach((c,i)=>c.style.setProperty('--i',i));void g.offsetWidth;g.classList.add('app-stagger')}
+function toast(title,msg,icon,ghost){
+  const el=document.createElement('div');
+  el.className='toast toast--success'+(ghost?' toast--ghost':'');
+  el.innerHTML=`<div class="toast-icon"><i class="bi ${icon||'bi-check-lg'}"></i></div><div class="toast-content"><strong class="toast-title">${esc(title)}</strong><p class="toast-message">${esc(msg)}</p></div><button class="toast-close"><i class="bi bi-x-lg"></i></button>`;
+  el.querySelector('.toast-close').onclick=()=>el.remove();
+  $('#toasts').appendChild(el);later(4800,()=>el.remove());
+  if(ghost){pushNotif(title,msg);el.classList.add('app-glitch');flicker()}
+}
+
+/* ===================== site public ===================== */
+function nextGhost(){const n=new Date(),t=new Date(n);t.setHours(3,12,0,0);if(t<=n)t.setDate(t.getDate()+1);return t}
+function tick(){if(S.view!=='site')return;const d=Math.max(0,Math.floor((nextGhost()-Date.now())/1000));
+  $('#cdH').textContent=pad(Math.floor(d/3600));$('#cdM').textContent=pad(Math.floor(d%3600/60));$('#cdS').textContent=pad(d%60);
+  if(d===0){flicker();toast('m.dossou',"vient de se connecter.",'bi-moon-stars',true)}}
+setInterval(tick,1000);
+const revealIO='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revealIO.unobserve(e.target)}}),{threshold:.15}):null;
+function revealScan(){tick();$$('#v-site [data-reveal]').forEach(el=>revealIO?revealIO.observe(el):el.classList.add('in'))}
+setInterval(()=>{if(S.view==='site')glitch($('#ghostStat'))},6500);
+$('#nfSearchBtn').onclick=()=>toast('Recherche','Aucun résultat. Personne ici.','bi-search');
+
+/* ===================== connexion & mot de passe ===================== */
+const showAlert=(id,msg)=>{const a=$('#'+id);a.querySelector('span').textContent=msg;a.classList.add('show')};
+const hideAlert=id=>$('#'+id).classList.remove('show');
+const GONE=['m.dossou@olla.bj','mawuli@olla.bj'];
+$('#loginForm').addEventListener('submit',e=>{e.preventDefault();
+  const m=$('#loginEmail').value.trim().toLowerCase(),p=$('#loginPwd').value;
+  if(GONE.includes(m))return showAlert('loginAlert','Ce compte a été supprimé.');
+  if(m!==MAIL)return showAlert('loginAlert',m?'Aucun compte actif pour cet email.':'Indiquez votre adresse email.');
+  if(!S.pwd||p!==S.pwd)return showAlert('loginAlert','Mot de passe incorrect.');
+  hideAlert('loginAlert');S.logged=true;S.page='dash';save();go('app');
+});
+function forgotStep(k){$('#forgotA').classList.toggle('hidden',k!=='A');$('#forgotB').classList.toggle('hidden',k!=='B');hideAlert('forgotAAlert');hideAlert('forgotBAlert')}
+$('#forgotAForm').addEventListener('submit',e=>{e.preventDefault();const m=$('#forgotEmail').value.trim().toLowerCase();
+  if(GONE.includes(m))return showAlert('forgotAAlert','Ce compte a été supprimé.');
+  if(m!==MAIL)return showAlert('forgotAAlert','Aucun compte actif pour cet email.');
+  S.sawQuestion=true;save();forgotStep('B');hintsRender();$('#forgotAnswer').focus()});
+$('#forgotBForm').addEventListener('submit',e=>{e.preventDefault();
+  const a=$('#forgotAnswer').value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(a!=='baobab'){S.wrong++;addScore(-10);return showAlert('forgotBAlert','Mauvaise réponse.')}
+  go('reset')});
+function strength(){const v=$('#resetPwd').value,len=v.length>=4,num=/\d/.test(v);
+  $('[data-crit=len]').classList.toggle('met',len);$('[data-crit=num]').classList.toggle('met',num);
+  $$('[data-crit]').forEach(c=>c.querySelector('i').className='bi '+(c.classList.contains('met')?'bi-check-circle-fill':'bi-circle'));
+  const sc=Math.min(4,(len?1:0)+(num?1:0)+(v.length>=8?1:0)+(/[^\w]/.test(v)?1:0)),col=['#e5e7eb','#ef4444','#f59e0b','#10b981','#059669'][sc];
+  $$('.password-strength__segment').forEach((s,i)=>s.style.background=i<sc?col:'');
+  $('#strengthText').textContent=v?['','Faible','Moyen','Bon','Fort'][sc]:'';
+  const b=$('#resetPwd2').value;$('#matchError').classList.toggle('show',!!b&&b!==v);$('#matchSuccess').classList.toggle('show',!!b&&b===v)}
+['#resetPwd','#resetPwd2'].forEach(s=>$(s).addEventListener('input',strength));
+$('#resetFormEl').addEventListener('submit',e=>{e.preventDefault();const a=$('#resetPwd').value,b=$('#resetPwd2').value;
+  if(a.length<4)return showAlert('resetAlert','4 caractères minimum.');
+  if(a!==b)return showAlert('resetAlert','Les mots de passe ne correspondent pas.');
+  hideAlert('resetAlert');S.pwd=a;save();hintsRender();$('#loginEmail').value=MAIL;$('#loginPwd').value='';
+  $('#resetForm').style.display='none';$('#resetSuccess').classList.add('show')});
+
+/* ===================== coque de l'espace ===================== */
+$('#toggleSidebar').onclick=()=>$('#sidebar').classList.toggle('collapsed');
+if(matchMedia('(max-width:900px)').matches)$('#sidebar').classList.add('collapsed');
+$('#userMenuToggle').onclick=e=>{e.stopPropagation();$('#userDropdown').classList.toggle('open')};
+$('#logoutLink').onclick=e=>{e.preventDefault();S.logged=false;save();go('site')};
+function frags(){$('#hudFrags').innerHTML=[1,2,3].map(i=>`<span class="app-hud-frag${S['f'+i]?' got':''}" id="hudFrag${i}" title="Fragment ${i}">${S['f'+i]?'<i class="bi bi-check-lg"></i>':i}</span>`).join('')}
+const FRAGTXT={1:['Fragment chiffré','Décode la note pour le lire.'],2:['n_est_pas_','Note-le, il ne sera pas recopié.'],3:['un_fantome}','Note-le, il ne sera pas recopié.']};
+function found(i){if(S['f'+i])return;S['f'+i]=true;save();hintsRender();fragPop(i);later(1200,()=>addScore(100))}
+function fragPop(i){const p=$('#fragPop');$('#fragPopK').textContent=`Fragment ${i} / 3`;$('#fragPopV').textContent=FRAGTXT[i][0];$('#fragPopS').textContent=FRAGTXT[i][1];
+  p.style.display='block';p.animate([{opacity:0,transform:'translate(-50%,-50%) scale(.94)'},{opacity:1,transform:'translate(-50%,-50%) scale(1)'}],{duration:320,easing:'cubic-bezier(0.23,1,0.32,1)',fill:'forwards'});
+  later(1900,()=>{const slot=$('#hudFrag'+i),r=slot.getBoundingClientRect(),q=p.getBoundingClientRect(),dx=r.left+r.width/2-(q.left+q.width/2),dy=r.top+r.height/2-(q.top+q.height/2);
+    p.animate([{opacity:1,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.08)`}],{duration:560,easing:'cubic-bezier(0.77,0,0.175,1)',fill:'forwards'}).onfinish=()=>{p.style.display='none';frags();const s=$('#hudFrag'+i);s.classList.add('pop')}})}
+let shown=S.score;
+function countTo(el,a,b,ms){const t0=performance.now(),f=v=>Math.round(v).toLocaleString('fr-FR');if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=f(b);return}
+  (function st(t){const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=f(a+(b-a)*e);if(k<1)requestAnimationFrame(st)})(t0)}
+function addScore(d){S.score=Math.max(0,S.score+d);save();const el=$('#hudScore');countTo(el,shown,S.score,600);shown=S.score;
+  const r=el.getBoundingClientRect();if(!r.width)return;const f=document.createElement('div');f.className='app-float';f.textContent=(d>0?'+':'')+d;f.style.color=d>0?'#6ee7b7':'#fca5a5';f.style.left=r.left+'px';f.style.top=(r.bottom+6)+'px';document.body.appendChild(f);
+  f.animate([{opacity:0,transform:'translateY(-4px)'},{opacity:1,transform:'translateY(0)',offset:.2},{opacity:0,transform:'translateY(16px)'}],{duration:1100,easing:'cubic-bezier(0.23,1,0.32,1)'}).onfinish=()=>f.remove()}
+
+/* notifications */
+let NOTIFS=[{w:'Olla',m:'Fermeture du service',t:'14 mars 2019',c:'#6366f1',i:'OL'},{w:'m.dossou',m:"s'est connecté",t:'cette nuit, 03:12',c:'#374151',i:'MD'}];
+let unread=2;
+function pushNotif(w,m){NOTIFS.unshift({w,m,t:"à l'instant",c:'#374151',i:w==='m.dossou'||w.startsWith('Mawuli')?'MD':'OL'});unread++;renderNotifs()}
+function renderNotifs(){
+  $('#notifList').innerHTML=NOTIFS.map((n,k)=>`<div class="nt__item"><div class="nt__avatar-wrap"><div class="nt__avatar-init" style="background:${n.c}">${n.i}</div>${k<unread?'<span class="nt__dot"></span>':''}</div><div class="nt__content"><div class="nt__message"><strong>${esc(n.w)}</strong> ${esc(n.m)}</div><div class="nt__meta"><span>${n.t}</span></div></div></div>`).join('');
+  $('#bellPill').textContent=unread;$('#bellPill').style.display=unread?'':'none';
+}
+$('#bellBtn').onclick=()=>$('#notifDrop').classList.toggle('on');
+$('#markRead').onclick=()=>{unread=0;renderNotifs()};
+
+/* ===================== tableau de bord ===================== */
+const HOURS=[['00h – 02h',0],['03h',412],['04h – 08h',0],['09h – 18h',0],['19h – 23h',0]];
+function renderChart(){$('#chartList').innerHTML=HOURS.map(([l,v],i)=>`<li class="failure-row" role="listitem" style="--i:${i}"><div class="failure-row__head"><span class="failure-row__label">${l}</span><span class="failure-row__value">${v}</span></div><div class="failure-row__track" role="progressbar" aria-valuenow="${v}" aria-valuemin="0" aria-valuemax="412"><div class="failure-row__fill" style="width:${v?100:0}%"></div></div></li>`).join('')}
+let actFilter='all',actNights=3;
+function lastNight(i){const d=new Date();if(d.getHours()*60+d.getMinutes()<192)d.setDate(d.getDate()-1);d.setDate(d.getDate()-i);return d}
+const fdate=d=>d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+function actItem(k,title,desc,time,marker,icon,label){return `<div class="timeline-item" data-kind="${k}"><div class="timeline-marker marker--${marker}"><i class="bi ${icon}"></i></div><div class="activity-card"><span class="activity-type type--${k==='login'?'login':k==='you'?'create':'update'}">${label}</span><div class="activity-card-header"><h4 class="activity-title">${title}</h4><span class="activity-time">${time}</span></div><p class="activity-description">${desc}</p><div class="activity-meta"><span class="meta-item"><i class="bi bi-globe"></i>127.0.0.1</span><span class="meta-item"><i class="bi bi-pc-display"></i>Baobab</span><span class="meta-item"><i class="bi bi-geo-alt"></i>Cotonou, Bénin</span></div></div></div>`}
+function renderActs(){
+  const who='<a class="app-who" data-profile>m.dossou</a>';let html='',n=0;
+  if(S.done){const t=new Date(S.end);html+=`<div class="date-group"><div class="date-label">aujourd'hui</div><div class="timeline">${actItem('you','<strong>toi</strong> as repris la veille','Le Veilleur peut s\'arrêter.',pad(t.getHours())+':'+pad(t.getMinutes()),'success','bi-person-check','Reprise')}</div></div>`;n++}
+  for(let i=0;i<actNights;i++){
+    const items=[];
+    if(actFilter!=='update')items.push(actItem('login',who+" s'est connecté",'Session ouverte par un compte supprimé.','03:12','neutral','bi-moon-fill','Connexion'));
+    if(actFilter!=='login')items.push(actItem('update',who+' a ouvert /veille/journal.log','Aucune modification enregistrée.','03:13','primary','bi-file-earmark-text','Fichier'));
+    n+=items.length;html+=`<div class="date-group"><div class="date-label">${fdate(lastNight(i))}</div><div class="timeline">${items.join('')}</div></div>`;
+  }
+  $('#actList').innerHTML=html;$('#actCount').textContent=n+' activités';$$('#actList .timeline-item').forEach((t,i)=>{t.style.setProperty('--i',Math.min(i,8));t.parentElement.classList.add('app-stagger')});
+  $('#actMore').style.display=actNights<12?'flex':'none';
+  $('#kpiLast').textContent=fdate(lastNight(0)).split(' ').slice(0,2).join(' ');
+}
+$('#actFilters').addEventListener('click',e=>{const b=e.target.closest('.filter-btn');if(!b)return;$$('#actFilters .filter-btn').forEach(x=>x.classList.toggle('active',x===b));actFilter=b.dataset.filter;renderActs()});
+$('#actMore').querySelector('button').onclick=()=>{actNights=Math.min(12,actNights+3);renderActs()};
+$('#actList').addEventListener('click',e=>{if(e.target.closest('[data-profile]'))openProfile()});
+function openProfile(){
+  $('#pfSkel').style.display='';$('#pfReal').style.display='none';$('#pfErr').style.display='none';
+  $('#pfNights').textContent=Math.floor((Date.now()-new Date(2019,2,14))/864e5).toLocaleString('fr-FR');
+  $('#profileOvl').classList.add('on');
+  later(2600,()=>{$('#pfSkel').style.display='none';$('#pfReal').style.display='';S.profile=true;save();hintsRender()});
+  later(4600,()=>{glitch($('#profileOvl .app-card'));flicker();later(220,()=>{$('#pfReal').style.display='none';$('#pfErr').style.display=''})});
+}
+
+/* ===================== fichiers ===================== */
+const FOLDER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h4.379a1.5 1.5 0 0 1 1.06.44l1.122 1.12a1.5 1.5 0 0 0 1.06.44H19.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
+const CHEVRON='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>';
+const FILES={
+  journal:['veille/journal.log',''],
+  readme:['LISEZMOI.md','# Olla\nEspace de travail archivé.\nNe pas éteindre le serveur.'],
+  roadmap:['projets/roadmap-2019.md','# Roadmap 2019\n- [ ] v3.0\n- [ ] application mobile\n(abandonné)'],
+  clients:['clients/liste.csv','nom,équipes,statut\n…,…,archivé'],
+  note:['.mawuli/note.b64','RnJhZ21lbnQgMSA6IExVSXszaDEyXwpMYSBzdWl0ZSBlc3QgZGFucyBsYSB2ZXJzaW9uIHF1ZSBwZXJzb25uZSBuJ2EgcHVibGnDqWUu']
+};
+const TREE=['olla',[['projets',[['roadmap-2019.md','roadmap']]],['clients',[['liste.csv','clients']]],['veille',[['journal.log','journal']]],['.mawuli',[['note.b64','note']],1],['LISEZMOI.md','readme']]];
+function node(n,root){
+  const [name,kids,hidden]=n;
+  if(typeof kids==='string')return `<li class="tree-view-anime__item${hidden?' app-hidden-item':''}"><div class="tree-view-anime__node app-file" data-file="${kids}"><span class="tree-view-anime__chevron tree-view-anime__chevron--spacer" aria-hidden="true"></span><span class="tree-view-anime__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span><span class="tree-view-anime__label">${name}</span></div></li>`;
+  const hl=hidden?' tree-view-anime__item--highlight app-hidden-item':'';
+  const inner=`<ul class="tree-view-anime__list">${kids.map(k=>node(k)).join('')}</ul>`;
+  return `<li class="tree-view-anime__item${hl}"><button type="button" class="tree-view-anime__node tree-view-anime__node--toggle" aria-expanded="true"><span class="tree-view-anime__chevron" aria-hidden="true">${CHEVRON}</span><span class="tree-view-anime__icon" aria-hidden="true">${FOLDER}</span><span class="tree-view-anime__label">${name}/</span></button><div class="tree-view-anime__children"><div class="tree-view-anime__children-inner">${inner}</div></div></li>`;
+}
+$('#treeRoot').innerHTML=`<ul class="tree-view-anime__list tree-view-anime__list--root tree-view-anime__list--emphasis">${node(TREE,1)}</ul>`;
+$('#treeRoot').addEventListener('click',e=>{
+  const t=e.target.closest('.tree-view-anime__node--toggle');
+  if(t){const open=t.getAttribute('aria-expanded')==='true';t.setAttribute('aria-expanded',String(!open));t.nextElementSibling.classList.toggle('tree-view-anime__children--collapsed',open);return}
+  const f=e.target.closest('[data-file]');if(!f)return;
+  $$('#treeRoot .app-file').forEach(x=>x.classList.toggle('app-sel',x===f));
+  const [name,body]=FILES[f.dataset.file];$('#codeName').textContent=name;
+  $('#codeBody').textContent=body||'(fichier vide)';$('#copyText').textContent='Copier';
+  if(f.dataset.file==='note')found(1);
+});
+$('#showHidden').addEventListener('change',e=>$('#filesWrap').classList.toggle('app-show-hidden',e.target.checked));
+$('#copyBtn').onclick=()=>{try{navigator.clipboard.writeText($('#codeBody').textContent)}catch(e){}$('#copyText').textContent='Copié !'};
+
+/* ===================== versions ===================== */
+const VERS=[
+  {n:'v2.5.0',type:'draft',status:'draft',date:'15 mars 2019',who:'MD',name:'Mawuli Dossou',size:'0.1 MB',notes:'Jamais publiée. Poussée la nuit de la fermeture.',log:[['#6b7280','bi-pencil','changed','Inscriptions désactivées'],['#10b981','bi-plus-circle','added','Service veilleur, tous les jours à 03:12'],['#4f46e5','bi-puzzle','note','Fragment 2 : n_est_pas_'],['#4f46e5','bi-chat-quote','note',"« J'ai tout programmé. Va lire nos messages. »"]]},
+  {n:'v2.4.0',type:'minor',status:'current',date:'14 mars 2019',who:'SA',name:'Sika Adjovi',size:'24.5 MB',notes:'Fermeture du service.',log:[['#6b7280','bi-pencil','changed','Passage en lecture seule'],['#10b981','bi-plus-circle','added','Page d\'adieu']]},
+  {n:'v2.3.1',type:'patch',status:'published',date:'2 janv. 2019',who:'MD',name:'Mawuli Dossou',size:'24.2 MB',log:[['#f59e0b','bi-bug','fixed','Export PDF des tableaux']]},
+  {n:'v2.0.0',type:'major',status:'published',date:'11 juin 2018',who:'AB',name:'Aïcha Bello',size:'22.0 MB',log:[['#10b981','bi-plus-circle','added','Nouvelle interface']]},
+  {n:'v1.2.0',type:'minor',status:'published',date:'20 nov. 2017',who:'MD',name:'Mawuli Dossou',size:'12.4 MB',log:[['#10b981','bi-plus-circle','added','Messagerie d\'équipe']]},
+  {n:'v1.0.0',type:'major',status:'archived',date:'12 mars 2016',who:'MD',name:'Mawuli Dossou',size:'3.1 MB',log:[['#10b981','bi-plus-circle','added','Première version, servie depuis Baobab']]}
+];
+const BADGE={major:'Majeure',minor:'Mineure',patch:'Patch',draft:'Brouillon'},STATUS={current:'Actuelle',published:'Publiée',archived:'Archivée',draft:'Brouillon'};
+$('#versList').innerHTML=VERS.map((v,i)=>`<div class="version-item ${v.status==='current'?'current':''} ${v.type==='draft'?'draft':''}" data-i="${i}" data-type="${v.type}"><div class="timeline-indicator"><div class="timeline-dot ${v.status==='current'?'current':''}"><i class="bi ${v.status==='current'?'bi-check-lg':v.type==='draft'?'bi-pencil':'bi-tag'}"></i></div>${i<VERS.length-1?'<div class="timeline-line"></div>':''}</div><div class="version-content"><div class="version-header"><div class="version-main"><div class="version-title"><span class="version-number">${v.n}</span><span class="version-badge version-badge--${v.type}">${BADGE[v.type]}</span><span class="status-badge status-badge--${v.status}">${STATUS[v.status]}</span></div><div class="version-meta"><span><i class="bi bi-calendar3"></i> ${v.date}</span><span><span class="author-avatar">${v.who}</span> ${v.name}</span><span><i class="bi bi-file-earmark"></i> ${v.size}</span></div></div><div class="version-actions"><button class="action-btn" title="Télécharger" data-readonly="Téléchargement désactivé."><i class="bi bi-download"></i></button><button class="expand-btn"><i class="bi bi-chevron-down"></i></button></div></div><div class="version-details">${v.notes?`<p class="version-notes">${v.notes}</p>`:''}<div class="changelog"><h4 class="changelog-title">Changelog</h4><ul class="changelog-list">${v.log.map(([c,ic,t,d])=>`<li class="changelog-item"><span class="change-icon" style="color:${c}"><i class="bi ${ic}"></i></span><span class="change-type" style="color:${c}">${t}</span><span class="change-desc">${d}</span></li>`).join('')}</ul></div></div></div></div>`).join('');
+let versFilter='all';
+function versRender(){const q=$('#versSearch').value.trim().toLowerCase();
+  $$('#versList .version-item').forEach(el=>{const v=VERS[el.dataset.i];
+    const okType=versFilter==='draft'?v.type==='draft':(v.type!=='draft'&&(versFilter==='all'||v.type===versFilter));
+    el.classList.toggle('app-off',!(okType&&(!q||v.n.includes(q))))})}
+$('#versTabs').addEventListener('click',e=>{const b=e.target.closest('.filter-tab');if(!b)return;$$('#versTabs .filter-tab').forEach(x=>x.classList.toggle('active',x===b));versFilter=b.dataset.filter;versRender()});
+$('#versSearch').addEventListener('input',versRender);
+$('#versList').addEventListener('click',e=>{if(e.target.closest('[data-readonly]'))return;const it=e.target.closest('.version-item');if(!it||!e.target.closest('.version-header'))return;
+  it.classList.toggle('expanded');it.querySelector('.expand-btn i').className='bi '+(it.classList.contains('expanded')?'bi-chevron-up':'bi-chevron-down');
+  if(it.classList.contains('expanded')&&VERS[it.dataset.i].type==='draft')found(2)});
+versRender();
+
+/* ===================== messagerie ===================== */
+const GHOST="Le code, c'est le jour où tout a commencé.";
+const CONTACTS={
+  mawuli:{name:'Mawuli Dossou',init:'MD',msgs:[['d','13 mars 2019'],['me','23:41',"Demain je fais l'annonce. C'est fini, Mawuli."],['o','23:44','Je sais.'],['o','23:45','Laisse-moi juste une nuit sur le serveur.'],['me','23:52','Pour quoi faire ?'],['d','14 mars 2019'],['o','02:58',"Pour qu'elle ne s'éteigne pas complètement."],['o','03:12','Dernier commit envoyé. Bonne nuit, Sika.'],['me','08:05','Mawuli ? Ton compte a disparu.']]},
+  team:{name:'Équipe Olla',init:'EO',msgs:[['d','14 mars 2019'],['o','08:40',"C'est vraiment fini ?",'Kodjo'],['o','08:52','Trois belles années. Merci Sika.','Aïcha'],['me','09:10','Merci à vous. Je ferme les accès ce soir.'],['o','09:14','Merci à tous ❤️','Kodjo']]},
+  aicha:{name:'Aïcha Bello',init:'AB',msgs:[['d','14 mars 2019'],['o','10:02',"Tu as des nouvelles de Mawuli ? Il ne répond plus."],['me','10:05',"Non. Son compte n'existe plus."]]},
+  kodjo:{name:'Kodjo Mensah',init:'KM',msgs:[['d','14 mars 2019'],['o','11:30',"J'ai prévenu les derniers clients."],['me','11:31','Merci Kodjo.']]}
+};
+let conv=null,typingT=[];
+function contactsRender(){const q=$('#chatSearch').value.trim().toLowerCase();
+  $('#contactList').innerHTML=Object.entries(CONTACTS).filter(([,c])=>!q||c.name.toLowerCase().includes(q)).map(([k,c])=>{
+    const last=k==='mawuli'&&S.typed?GHOST:c.msgs[c.msgs.length-1][2],live=k==='mawuli'&&S.typed,unread=live&&!S.once.readGhost;
+    const dot=k==='mawuli'?(live?'#10b981':'#9ca3af'):'#9ca3af';
+    return `<div class="contact-item ${conv===k?'active':''} ${unread?'unread':''}" data-c="${k}"><div class="contact-avatar"><span class="avatar-initials">${c.init}</span><span class="status-dot" style="background-color:${dot}"></span></div><div class="contact-info"><div class="contact-header"><span class="contact-name">${c.name}</span><span class="contact-time">${live?'maintenant':'2019'}</span></div><div class="contact-preview"><span class="last-message">${esc(last)}</span>${unread?'<span class="unread-badge">1</span>':''}</div></div></div>`}).join('')}
+function bubble(m,c){if(m[0]==='d')return `<div class="date-separator"><span>${m[1]}</span></div>`;
+  if(m[0]==='me')return `<div class="message message--own"><div class="message-bubble"><p class="message-content">${esc(m[2])}</p><div class="message-meta"><span class="message-time">${m[1]}</span><span class="message-status"><i class="bi bi-check-all read"></i></span></div></div></div>`;
+  const init=m[3]?m[3].slice(0,2).toUpperCase():c.init;
+  return `<div class="message message--other${m[4]?' '+m[4]:''}"><div class="message-avatar"><span class="avatar-initials avatar-initials--sm">${init}</span></div><div class="message-bubble"><p class="message-content">${m[3]?'<strong>'+m[3]+'</strong> · ':''}${esc(m[2])}</p><div class="message-meta"><span class="message-time">${m[1]}</span></div></div></div>`}
+function chatStatus(k){const live=k==='mawuli'&&S.typed;
+  $('#chatStatus').textContent=k==='mawuli'?(live?'En ligne':'Compte supprimé'):'Hors ligne';
+  $('#chatStatus').style.color=live?'#10b981':'#9ca3af';$('#chatDot').style.backgroundColor=live?'#10b981':'#9ca3af'}
+function openConv(k){
+  typingT.forEach(clearTimeout);typingT=[];conv=k;const c=CONTACTS[k];
+  $('#chatEmpty').style.display='none';$('#chatArea').style.display='flex';
+  $('#chatInit').textContent=c.init;$('#chatName').textContent=c.name;chatStatus(k);
+  const list=[...c.msgs];if(k==='mawuli'&&S.typed)list.push(['d',"Aujourd'hui"],['o',"à l'instant",GHOST]);
+  $('#msgList').innerHTML=list.map(m=>bubble(m,c)).join('');$('#msgList').scrollTop=1e5;
+  if(k==='mawuli'&&S.typed&&!S.once.readGhost){S.once.readGhost=1;save();$('#msgBadge').style.display='none'}
+  contactsRender();
+  if(k==='mawuli'&&!S.typed){
+    typingT.push(later(3500,()=>{$('#msgList').insertAdjacentHTML('beforeend',bubble(['o','',"en train d'écrire…",null,'message--typing'],c));$('#msgList').scrollTop=1e5;$('#chatStatus').textContent='En train d\'écrire…';$('#chatStatus').style.color='#10b981'}));
+    typingT.push(later(7500,()=>{S.typed=true;S.once.readGhost=1;save();$('.message--typing')?.remove();$('#msgList').insertAdjacentHTML('beforeend',bubble(['d',"Aujourd'hui"],c)+bubble(['o',"à l'instant",GHOST],c));$('#msgList').scrollTop=1e5;glitch($('#msgList .message:last-child'));flicker();chatStatus('mawuli');contactsRender();hintsRender()}));
+  }
+}
+$('#contactList').addEventListener('click',e=>{const it=e.target.closest('[data-c]');if(it)openConv(it.dataset.c)});
+$('#chatSearch').addEventListener('input',contactsRender);
+$('#msgInput').addEventListener('input',e=>$('#sendBtn').disabled=!e.target.value.trim());
+function send(){const v=$('#msgInput').value.trim();if(!v||!conv)return;const d=new Date();
+  $('#msgList').insertAdjacentHTML('beforeend',bubble(['me',pad(d.getHours())+':'+pad(d.getMinutes()),v]));$('#msgInput').value='';$('#sendBtn').disabled=true;$('#msgList').scrollTop=1e5;
+  later(1200,()=>toast('Message non distribué',conv==='mawuli'?'Ce compte n\'existe plus.':'Olla est en lecture seule.','bi-exclamation-circle'))}
+$('#sendBtn').onclick=send;$('#msgInput').addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+
+/* ===================== calendrier ===================== */
+const MOIS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const EV={'2016-03-12':['Premier commit — Baobab','03:12','Le tout premier commit d\'Olla, poussé depuis Baobab.','#4f46e5'],'2017-06-01':['Premier client','10:00','','#0f766e'],'2018-06-11':['Lancement v2.0','09:00','','#0f766e'],'2019-03-14':['Fermeture d\'Olla','23:00','','#be185d'],'2019-03-15':['v2.5 (brouillon)','03:05','Jamais publiée.','#6b7280']};
+const COL={'#4f46e5':['rgba(99,102,241,.2)','#c7d2fe'],'#0f766e':['rgba(20,184,166,.16)','#99f6e4'],'#be185d':['rgba(236,72,153,.16)','#fbcfe8'],'#6b7280':['rgba(148,163,184,.14)','#cbd5e1']};
+let cy=2019,cm=2;
+const today=new Date(),tkey=`${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+function eventsOf(k){const e=EV[k]?[EV[k]]:[];const d=new Date(k);if(d>=new Date(2019,2,15)&&k<=tkey&&d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth())e.push(['Veille','03:12','Le Veilleur rouvre Olla.','#6b7280']);return e}
+function chip(e,k){const [bg,fg]=COL[e[3]];return `<div class="cv__event" data-k="${k}" data-t="${esc(e[0])}" title="${esc(e[0])}" style="background:${bg};color:${fg};"><span class="cv__event-dot" style="background:${e[3]}"></span><span class="cv__event-title">${esc(e[0])}</span><span class="cv__event-time">${e[1]}</span></div>`}
+function renderCal(){
+  $('#todayNum').textContent=today.getDate();
+  $('#monthTitle').textContent=MOIS[cm][0].toUpperCase()+MOIS[cm].slice(1)+' '+cy;
+  const n=new Date(cy,cm+1,0).getDate();$('#monthRange').textContent=`1 ${MOIS[cm]} ${cy} – ${n} ${MOIS[cm]} ${cy}`;
+  const first=(new Date(cy,cm,1).getDay()+6)%7,prevN=new Date(cy,cm,0).getDate();let h='';
+  for(let i=first;i>0;i--)h+=`<div class="cv__cell cv__cell--other"><div class="cv__day-num">${prevN-i+1}</div></div>`;
+  for(let d=1;d<=n;d++){const k=`${cy}-${pad(cm+1)}-${pad(d)}`,ev=eventsOf(k);h+=`<div class="cv__cell${k===tkey?' cv__cell--today':''}${ev.length?' cv__cell--ghost':''}"><div class="cv__day-num">${d}</div>${ev.map(e=>chip(e,k)).join('')}</div>`}
+  const tail=(7-(first+n)%7)%7;for(let d=1;d<=tail;d++)h+=`<div class="cv__cell cv__cell--other"><div class="cv__day-num">${d}</div></div>`;
+  $('#calGrid').innerHTML=h;
+}
+$('#prevBtn').onclick=()=>{cm--;if(cm<0){cm=11;cy--}renderCal()};
+$('#nextBtn').onclick=()=>{cm++;if(cm>11){cm=0;cy++}renderCal()};
+$('#todayBtn').onclick=()=>{cy=today.getFullYear();cm=today.getMonth();renderCal()};
+$('#calSearchBtn').onclick=()=>{$('#calSearch').classList.toggle('on');$('#calQuery').focus()};
+$('#calQuery').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();
+  $('#calResults').innerHTML=q?Object.entries(EV).filter(([,v])=>v[0].toLowerCase().includes(q)).map(([k,v])=>chip([v[0]+' · '+k.split('-').reverse().join('/'),v[1],v[2],v[3]],k)).join('')||'<span class="cv__month-range">Aucun événement.</span>':''});
+function openEvent(k,title){const [y,m,d]=k.split('-'),e=eventsOf(k).find(x=>title.startsWith(x[0]))||eventsOf(k)[0];
+  $('#calFTitle').value=e[0];$('#calFDate').value=`${d}/${m}/${y}`;$('#calFTime').value=e[1];$('#calFNote').value=e[2]||'—';$('#calModal').classList.remove('hidden')}
+$('#calGrid').addEventListener('click',e=>{const c=e.target.closest('.cv__event');if(c)openEvent(c.dataset.k,c.dataset.t)});
+$('#calResults').addEventListener('click',e=>{const c=e.target.closest('.cv__event');if(!c)return;const [y,m]=c.dataset.k.split('-');cy=+y;cm=+m-1;renderCal();openEvent(c.dataset.k,c.dataset.t)});
+
+/* ===================== coffre ===================== */
+$('#otpInputs').innerHTML=Array.from({length:6},(_,i)=>`<input type="text" maxlength="1" class="otp-input" inputmode="numeric" autocomplete="one-time-code" data-index="${i}">`).join('');
+const cells=$$('#otpInputs .otp-input');
+cells.forEach((c,i)=>{
+  c.addEventListener('input',()=>{c.value=c.value.replace(/\D/g,'').slice(-1);c.classList.toggle('filled',!!c.value);c.classList.remove('error');if(c.value&&i<5)cells[i+1].focus();otpCheck()});
+  c.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!c.value&&i)cells[i-1].focus()});
+  c.addEventListener('paste',e=>{e.preventDefault();(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6).split('').forEach((ch,j)=>{cells[j].value=ch;cells[j].classList.add('filled')});otpCheck()});
+});
+function otpCheck(){const v=cells.map(c=>c.value).join('');hideAlert('otpAlert');if(v.length<6)return;
+  $('#otpLoading').classList.add('show');
+  later(900,()=>{$('#otpLoading').classList.remove('show');
+    if(v==='120316'){renderVaultOpen();found(3);later(2500,()=>$('#vaultModal').classList.add('visible'))}
+    else{S.wrong++;addScore(-20);showAlert('otpAlert','Code incorrect.');cells.forEach(c=>{c.classList.add('error');c.classList.remove('filled')});later(500,()=>{cells.forEach(c=>{c.value='';c.classList.remove('error')});cells[0].focus()})}})}
+function renderVaultOpen(){$('#vaultLocked').style.display='none';$('#vaultOpen').style.display='';$('#vaultLock').style.display='none'}
+function renderVault(){$('#vaultLocked').style.display=S.f3?'none':'';$('#vaultOpen').style.display=S.f3?'':'none';$('#vaultLock').style.display=S.f3?'none':''}
+
+/* ===================== flag ===================== */
+function sha256(a){function c(x,n){return x>>>n|x<<32-n}var d,e,f=Math.pow,g=f(2,32),i='',j=[],k=8*a.length,l=sha256.h=sha256.h||[],m=sha256.k=sha256.k||[],n=m.length,o={},p=2;for(;64>n;p++)if(!o[p]){for(d=0;313>d;d+=p)o[d]=p;l[n]=f(p,.5)*g|0;m[n++]=f(p,1/3)*g|0}a+='\x80';for(;a.length%64-56;)a+='\x00';for(d=0;d<a.length;d++){e=a.charCodeAt(d);if(e>>8)return'';j[d>>2]|=e<<(3-d)%4*8}j[j.length]=k/g|0;j[j.length]=k;for(e=0;e<j.length;){var q=j.slice(e,e+=16),r=l;l=l.slice(0,8);for(d=0;64>d;d++){var s=q[d-15],t=q[d-2],u=l[0],v=l[4],w=l[7]+(c(v,6)^c(v,11)^c(v,25))+(v&l[5]^~v&l[6])+m[d]+(q[d]=16>d?q[d]:q[d-16]+(c(s,7)^c(s,18)^s>>>3)+q[d-7]+(c(t,17)^c(t,19)^t>>>10)|0),x=(c(u,2)^c(u,13)^c(u,22))+(u&l[1]^u&l[2]^l[1]&l[2]);l=[w+x|0].concat(l);l[4]=l[4]+w|0}for(d=0;8>d;d++)l[d]=l[d]+r[d]|0}for(d=0;8>d;d++)for(e=3;e+1;e--){var y=l[d]>>8*e&255;i+=(16>y?'0':'')+y.toString(16)}return i}
+let flagStep='input';
+function flagMode(mode,msg){flagStep=mode;const D=$('#flagDialog');
+  D.className='dialog '+(mode==='confirm'?'dialog--warning':mode==='bad'?'dialog--danger':'dialog--info');
+  $('#flagIcon').className='bi '+(mode==='confirm'?'bi-moon-stars-fill':mode==='bad'?'bi-x-octagon-fill':'bi-flag-fill');
+  $('#flagTitle').textContent=mode==='confirm'?'Arrêter le Veilleur ?':'Soumettre le flag';
+  $('#flagMsg').textContent=msg||(mode==='confirm'?'Olla ne se rouvrira plus la nuit.':'Format attendu : LUI{...}');
+  $('#flagInputWrap').style.display=mode==='confirm'?'none':'';
+  $('#flagOk').className='btn '+(mode==='confirm'?'btn--warning':'btn--info');$('#flagOk').textContent=mode==='confirm'?'Confirmer':'Vérifier'}
+$('#flagBtn').onclick=()=>{flagMode('input');$('#flagInput').value='';$('#flagOvl').classList.add('active');later(50,()=>$('#flagInput').focus())};
+$('#flagCancel').onclick=()=>$('#flagOvl').classList.remove('active');
+$('#flagOvl').addEventListener('click',e=>{if(e.target.id==='flagOvl')$('#flagOvl').classList.remove('active')});
+$('#flagInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#flagOk').click()});
+$('#flagOk').onclick=()=>{
+  if(flagStep!=='confirm'){if(sha256($('#flagInput').value.trim())===FLAG_SHA)flagMode('confirm');else{S.wrong++;addScore(-50);flagMode('bad',"Ce n'est pas le bon flag.")}return}
+  $('#flagOvl').classList.remove('active');S.done=true;S.end=Date.now();save();page('dash');
+  later(900,()=>toast('Le Veilleur',"peut s'arrêter.",'bi-moon-stars',true));
+  later(4200,showEnd);
+};
+const RANKS=[[1700,'S','Veilleur légendaire'],[1400,'A','Enquêteur de nuit'],[1100,'B','Insomniaque'],[0,'C','Somnambule']];
+const BADGES=[['bi-lightbulb-off','Sans indice',()=>!Object.keys(S.hints).length],['bi-stopwatch','Moins de 10 min',()=>S.end-S.start<600000],['bi-bullseye','Sans faute',()=>!S.wrong],['bi-question-diamond','Curieux',()=>S.saw404]];
+let endR=null;
+function showEnd(){const s=Math.round((S.end-S.start)/1000),bonus=Math.max(0,Math.round(500-25*s/60)),total=S.score+bonus,R=RANKS.find(r=>total>=r[0]);endR={R,total,time:Math.floor(s/60)+' min '+pad(s%60)+' s'};
+  $('#endRank').textContent=R[1];$('#endTitle').textContent=R[2];$('#endTime').textContent=endR.time;$('#endBonus').textContent='+'+bonus;$('#endHints').textContent=Object.keys(S.hints).length;$('#endScore').textContent='0';
+  $('#endBadges').innerHTML=BADGES.map(([ic,l,ok],i)=>{const c=ok()?'#a5b4fc':'#4b5563';return `<span class="tag tag--status" style="--i:${i};background-color:${c}22;color:${c};border-color:${c};"><i class="bi ${ic}"></i> ${l}</span>`}).join('');
+  $('#endOvl').classList.add('on');const rk=$('#endRank');rk.classList.remove('in');later(450,()=>rk.classList.add('in'));later(500,()=>countTo($('#endScore'),0,total,1000))}
+$('#shareBtn').onclick=()=>{if(!endR)return;const t=`3 H 12 : rang ${endR.R[1]} (${endR.R[2]}), ${endR.total.toLocaleString('fr-FR')} pts en ${endR.time}. Qui se connecte à Olla toutes les nuits ?`;try{navigator.share?navigator.share({text:t}):navigator.clipboard.writeText(t)}catch(e){}$('#shareBtn').textContent='Copié !'};
+$('#replayBtn').onclick=()=>{try{localStorage.removeItem(KEY)}catch(e){}location.reload()};
+
+/* ===================== indices ===================== */
+const STEPS=[
+  {k:'site',n:1,t:"L'accès équipe",o:"Le site d'Olla cache un accès réservé à l'équipe. Trouve-le.",h:["Fais défiler le site jusqu'en bas.","Le pied de page contient un lien réservé à l'équipe.","Clique sur « Accès équipe »."]},
+  {k:'login',n:2,t:'Le compte de Sika',o:"Connecte-toi au compte de Sika, la fondatrice. Tu n'as pas son mot de passe.",h:["Son email figure dans la section Équipe du site (lien « Retour au site »).","Tu n'as pas son mot de passe : clique sur « Mot de passe oublié ? ».","L'email de Sika est sika@olla.bj."]},
+  {k:'question',n:2,t:'La question secrète',o:"Réponds à la question secrète. La réponse est sur le site d'Olla.",h:["Retourne sur le site d'Olla et lis la frise « Notre histoire ».","Regarde l'année 2016.","Le premier serveur s'appelait Baobab."]},
+  {k:'relogin',n:2,t:'Connexion',o:"Compte récupéré. Connecte-toi avec ton nouveau mot de passe.",h:["L'email est sika@olla.bj.","Le mot de passe est celui que tu viens de choisir.","Oublié ? Refais « Mot de passe oublié ? »."]},
+  {k:'dash',n:3,t:'Le tableau de bord',o:"Tu es dans l'espace. Tout est à zéro, sauf un utilisateur. Découvre qui c'est.",h:['Regarde la carte « Utilisateurs actifs », puis l\'historique.',"Un nom revient chaque nuit dans l'historique. Clique dessus.","Lis son profil avant qu'il ne disparaisse."]},
+  {k:'files',n:4,t:'Ce qui est caché',o:"Son profil disait « Cherche ce qui est caché ». Fouille les Fichiers.",h:["Ouvre Fichiers dans le menu de gauche.","Coche « Afficher les fichiers cachés ».","Ouvre .mawuli/ puis note.b64."]},
+  {k:'decode',n:5,t:'La note',o:"La note est encodée en base64. Décode-la : elle te dit où chercher ensuite.",h:["Copie le texte avec le bouton Copier.","Colle-le dans un décodeur base64 en ligne (base64decode.org par exemple).","La note parle d'une version jamais publiée : Versions, onglet Brouillons, v2.5.0."]},
+  {k:'vault',n:6,t:'Le coffre',o:"La version 2.5 te dit de lire vos messages. Trouve le code du coffre de Mawuli.",h:["Ouvre la Messagerie, conversation avec Mawuli, et attends.","« Le jour où tout a commencé » : cherche « commit » dans le Calendrier (loupe).","Le premier commit date du 12/03/2016 : saisis 120316 dans le Coffre."]},
+  {k:'flag',n:7,t:'Le flag',o:"Tu as les 3 fragments. Assemble-les et soumets le flag.",h:["Les fragments : la note décodée, la v2.5.0, la lettre.","Assemble-les dans l'ordre, sans espace.","Clique sur « Soumettre le flag » et colle le tout."]}
+];
+function stepKey(){if(!S.logged)return S.pwd?'relogin':S.sawQuestion?'question':S.sawLogin?'login':'site';if(!S.profile)return 'dash';if(!S.f1)return 'files';if(!S.f2)return 'decode';if(!S.f3)return 'vault';return 'flag'}
+const stepNow=()=>STEPS.findIndex(x=>x.k===stepKey());
+function objRender(){const st=stepNow(),x=STEPS[st],hud=$('#hud'),vis=S.view!=='intro'&&!S.done;
+  hud.classList.toggle('on',vis);$('#hudStep').textContent=`${x.n}/7`;$('#hudText').textContent=x.o;
+  if(st>(S.lastStep||0)){S.lastStep=st;save();if(vis)later(300,()=>showBrief(true))}}
+function showBrief(isNew){const x=STEPS[stepNow()],b=$('#brief');$('#briefK').textContent=(isNew?'Nouvel objectif · ':'Objectif · ')+x.n+'/7';$('#briefT').textContent=x.o;
+  b.classList.add('on');clearTimeout(showBrief.t);showBrief.t=later(isNew?4500:3500,()=>b.classList.remove('on'))}
+$('#hudObj').onclick=()=>$('#brief').classList.contains('on')?$('#brief').classList.remove('on'):showBrief(false);
+let onbI=0;
+function onbShow(i){onbI=i;[0,1,2].forEach(k=>$('#onb'+k).classList.toggle('hidden',k!==i));
+  $$('#onbDots .step-dot').forEach((d,k)=>{d.classList.toggle('active',k===i);d.classList.toggle('completed',k<i)});
+  $('#onbFill').style.width=((i+1)/3*100)+'%';$('#onbPrev').classList.toggle('hidden',i===0);
+  $('#onbNext').classList.toggle('hidden',i===2);$('#onbGo').classList.toggle('hidden',i!==2)}
+$('#onbNext').onclick=()=>onbShow(Math.min(2,onbI+1));$('#onbPrev').onclick=()=>onbShow(Math.max(0,onbI-1));
+$('#onbDots').addEventListener('click',e=>{const d=e.target.closest('.step-dot');if(d)onbShow(+d.dataset.step)});
+$('#onbSkip').onclick=$('#onbGo').onclick=()=>{S.start=Date.now();save();go('site');later(700,()=>showBrief(true))};
+const COSTS=[50,100,150],openH=new Set();
+function hintsRender(){objRender();const x=STEPS[stepNow()],st=x.k;$('#hintStep').textContent=`Étape ${x.n} / 7 · ${x.t}`;
+  $('#hintList').innerHTML=x.h.map((h,i)=>{const id=`h${st}-${i}`,rev=S.hints[id],open=openH.has(id),prev=i===0||S.hints[`h${st}-${i-1}`];
+    const body=rev?`<p>${h}</p>`:!prev?`<p class="app-hint-lock"><i class="bi bi-lock"></i> Révèle d'abord l'indice ${i}.</p>`:`<p>Cet indice coûte ${COSTS[i]} points sur ton score.</p><button class="app-btn app-btn--primary" data-reveal-hint="${id}" data-cost="${COSTS[i]}"><i class="bi bi-eye"></i> Révéler · -${COSTS[i]} pts</button>`;
+    return `<div class="acc1__item${open?' open':''}" data-hint="${id}"><button class="acc1__trigger"><span>Indice ${i+1}</span><span class="app-cost${rev?' ok':''}">${rev?'révélé':'-'+COSTS[i]+' pts'}</span><i class="bi ${open?'bi-dash-lg':'bi-plus-lg'}"></i></button><div class="acc1__body" style="${open?'':'display:none'}">${body}</div></div>`}).join('')}
+$('#hintList').addEventListener('click',e=>{const rv=e.target.closest('[data-reveal-hint]');
+  if(rv){const id=rv.dataset.revealHint;if(!S.hints[id]){S.hints[id]=1;save();addScore(-(+rv.dataset.cost))}openH.add(id);hintsRender();return}
+  const it=e.target.closest('[data-hint]');if(!it||!e.target.closest('.acc1__trigger'))return;const id=it.dataset.hint;openH.has(id)?openH.delete(id):openH.add(id);hintsRender()});
+
+/* ===================== panneau dev (?dev ou Maj+D) ===================== */
+const base={logged:true,pwd:'test'};
+const DEV=[['brief',()=>{S=fresh();go('intro');onbShow(0)}],['site',()=>{S=fresh();S.view='site';go('site')}],['connexion',()=>{S=fresh();go('login')}],['oubli',()=>{S=fresh();go('forgot')}],['reset',()=>{S=fresh();go('reset')}],['tableau',()=>{Object.assign(S,base);go('app');page('dash')}],['fichiers',()=>{Object.assign(S,base,{profile:true});go('app');page('files')}],['versions',()=>{Object.assign(S,base,{profile:true,f1:true});go('app');page('versions')}],['messagerie',()=>{Object.assign(S,base,{profile:true,f1:true,f2:true,typed:false});go('app');page('msg')}],['calendrier',()=>{Object.assign(S,base,{profile:true,f1:true,f2:true,typed:true});go('app');page('cal')}],['coffre',()=>{Object.assign(S,base,{profile:true,f1:true,f2:true,f3:false});go('app');page('vault')}],['flag',()=>{Object.assign(S,base,{profile:true,f1:true,f2:true,f3:true});go('app');$('#flagBtn').click()}],['fin',()=>{Object.assign(S,base,{done:true,end:Date.now()});go('app');showEnd()}],['404',()=>go('notfound')]];
+$('#dev').innerHTML=DEV.map((d,i)=>`<button data-dev="${i}">${d[0]}</button>`).join('');
+$('#dev').addEventListener('click',e=>{const b=e.target.closest('[data-dev]');if(!b)return;$('#brief').classList.remove('on');$('#endOvl').classList.remove('on');$('#flagOvl').classList.remove('active');$('#profileOvl').classList.remove('on');$('#vaultModal').classList.remove('visible');$('#hintPanel').classList.remove('on');DEV[b.dataset.dev][1]();save();frags();shown=S.score;$('#hudScore').textContent=S.score.toLocaleString('fr-FR')});
+if(/[?&]dev\b/.test(location.search))$('#dev').classList.add('on');
+document.addEventListener('keydown',e=>{if(e.shiftKey&&e.key==='D'&&!/INPUT|TEXTAREA/.test(document.activeElement.tagName))$('#dev').classList.toggle('on')});
+
+/* ===================== démarrage ===================== */
+frags();renderNotifs();contactsRender();renderVault();renderCal();renderChart();$('#hudScore').textContent=S.score.toLocaleString('fr-FR');
+if(S.typed&&!S.once.readGhost)$('#msgBadge').style.display='';
+if(S.done&&S.view==='app'){go('app');showEnd()}else go(S.view==='notfound'?'site':S.view);
+</script>
+</body>
+</html>

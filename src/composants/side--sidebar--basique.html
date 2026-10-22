@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sidebar Dashboard - Version HTML/CSS/JS</title>
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       RESET & VARIABLES
+    ═══════════════════════════════════════════════════════════════ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ui-primary: #6366f1;
+      --ui-secondary: #8b5cf6;
+      --ui-bg-dark: #0f172a;
+      --ui-bg-darker: #1a2744;
+      --ui-text-light: #e2e8f0;
+      --ui-text-muted: #94a3b8;
+      --ui-radius-sm: 0.375rem;
+      --ui-radius-md: 0.5rem;
+      --sidebar-width: 280px;
+      --sidebar-collapsed-width: 72px;
+      --transition-speed: 0.25s;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════════════════════ */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      width: var(--sidebar-width);
+      height: 930px;
+      background: linear-gradient(180deg, var(--ui-bg-dark) 0%, var(--ui-bg-darker) 100%);
+      color: var(--ui-text-light);
+      transition: width var(--transition-speed) ease;
+      position: sticky;
+      top: 0;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+    }
+
+    /* Header */
+    .sidebar__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar.collapsed .sidebar__header {
+      justify-content: center;
+      padding: 1rem 0.5rem;
+    }
+
+    .sidebar__logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sidebar__logo-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--ui-primary), var(--ui-secondary));
+      border-radius: var(--ui-radius-md);
+      font-size: 1.25rem;
+      color: white;
+    }
+
+    .sidebar__logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .sidebar.collapsed .sidebar__logo-text {
+      display: none;
+    }
+
+    .sidebar__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.06);
+      border: none;
+      border-radius: var(--ui-radius-sm);
+      color: var(--ui-text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar__toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: white;
+    }
+
+    /* Navigation */
+    .sidebar__nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+
+    .sidebar__nav::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar__nav::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar__nav::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    .sidebar__section {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .sidebar__section:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar.collapsed .sidebar__section {
+      padding: 0.5rem;
+    }
+
+    .sidebar__section-title {
+      display: block;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+    }
+
+    .sidebar.collapsed .sidebar__section-title {
+      display: none;
+    }
+
+    .sidebar__menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar__menu-item {
+      margin-bottom: 2px;
+    }
+
+    .sidebar__link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 1.02rem 1rem;
+      background: transparent;
+      border: none;
+      border-radius: var(--ui-radius-md);
+      color: var(--ui-text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar.collapsed .sidebar__link {
+      justify-content: center;
+      padding: 0.875rem;
+    }
+
+    .sidebar__link:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+    }
+
+    .sidebar__link.active {
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));
+      color: white;
+    }
+
+    .sidebar__link.active .sidebar__link-icon {
+      color: var(--ui-primary);
+    }
+
+    .sidebar__link.open .sidebar__link-arrow {
+      transform: rotate(180deg);
+    }
+
+    .sidebar__link-icon {
+      font-size: 1.15rem;
+      min-width: 1.25rem;
+      text-align: center;
+    }
+
+    .sidebar__link-text {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar.collapsed .sidebar__link-text,
+    .sidebar.collapsed .sidebar__link-arrow,
+    .sidebar.collapsed .sidebar__badge:not(.sidebar__badge--dot) {
+      display: none;
+    }
+
+    .sidebar__link-arrow {
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+      opacity: 0.6;
+    }
+
+    .sidebar__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      background: var(--ui-primary);
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .sidebar__badge--dot {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      min-width: 8px;
+      padding: 0;
+    }
+
+    .sidebar.collapsed .sidebar__badge--dot {
+      display: block;
+    }
+
+    /* Sous-menu */
+    .sidebar__submenu {
+      list-style: none;
+      padding: 0.25rem 0 0.25rem 2.5rem;
+      display: none;
+      animation: slideDown 0.2s ease;
+    }
+
+    .sidebar__submenu.open {
+      display: block;
+    }
+
+    .sidebar.collapsed .sidebar__submenu {
+      display: none !important;
+    }
+
+    .sidebar__sublink {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      color: var(--ui-text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      border-radius: var(--ui-radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar__sublink:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sidebar__sublink.active {
+      color: #a5b4fc;
+    }
+
+    .sidebar__sublink-icon {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    /* Footer / User */
+    .sidebar__footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.75rem;
+    }
+
+    .sidebar__user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--ui-radius-md);
+      transition: background 0.2s ease;
+    }
+
+    .sidebar.collapsed .sidebar__user {
+      justify-content: center;
+      padding: 0.875rem;
+    }
+
+    .sidebar__user:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar__user-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--ui-primary), var(--ui-secondary));
+      border-radius: 50%;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .sidebar__user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .sidebar__user-info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed .sidebar__user-info,
+    .sidebar.collapsed .sidebar__user-menu-wrapper {
+      display: none;
+    }
+
+    .sidebar__user-name {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar__user-role {
+      display: block;
+      font-size: 0.75rem;
+      color: #64748b;
+      padding-top: 0.25rem;
+    }
+
+    .sidebar__user-menu-wrapper {
+      position: relative;
+    }
+
+    .sidebar__user-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: none;
+      border-radius: var(--ui-radius-sm);
+      color: var(--ui-text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar__user-action:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    /* User Dropdown */
+    .sidebar__user-dropdown {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      min-width: 180px;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--ui-radius-md);
+      padding: 0.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      animation: dropdownSlideUp 0.2s ease;
+      z-index: 100;
+      display: none;
+    }
+
+    .sidebar__user-dropdown.open {
+      display: block;
+    }
+
+    .sidebar__user-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.875rem;
+      color: var(--ui-text-muted);
+      font-size: 0.875rem;
+      text-decoration: none;
+      border-radius: var(--ui-radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .sidebar__user-dropdown-item i {
+      font-size: 1rem;
+    }
+
+    .sidebar__user-dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    .sidebar__user-dropdown-item--danger {
+      color: #f87171;
+    }
+
+    .sidebar__user-dropdown-item--danger:hover {
+      background: rgba(248, 113, 113, 0.15);
+      color: #fca5a5;
+    }
+
+    .sidebar__user-dropdown-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 0.5rem 0;
+    }
+
+    /* Main Content (pour démo) */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      min-height: 100vh;
+      color: #1e293b;
+      background: #ffffff;
+    }
+
+    .main-content h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--ui-bg-dark);
+    }
+
+    .main-content p {
+      color: var(--ui-text-muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes dropdownSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <!-- Header -->
+    <div class="sidebar__header">
+      <div class="sidebar__logo">
+        <span class="sidebar__logo-icon">
+          <i class="bi bi-hexagon-fill"></i>
+        </span>
+        <span class="sidebar__logo-text">Dashboard</span>
+      </div>
+      <button class="sidebar__toggle" id="toggleSidebar" aria-label="Toggle sidebar">
+        <i class="bi bi-chevron-left" id="toggleIcon"></i>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar__nav">
+      <!-- Section Principal -->
+      <div class="sidebar__section">
+        <span class="sidebar__section-title">Principal</span>
+        <ul class="sidebar__menu">
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link active" data-id="dashboard">
+              <i class="bi bi-grid-1x2-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Tableau de bord</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="analytics">
+              <i class="bi bi-graph-up sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Analytiques</span>
+              <span class="sidebar__badge">3</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="reports">
+              <i class="bi bi-file-earmark-bar-graph sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Rapports</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section Gestion -->
+      <div class="sidebar__section">
+        <span class="sidebar__section-title">Gestion</span>
+        <ul class="sidebar__menu">
+          <li class="sidebar__menu-item">
+            <button class="sidebar__link" data-id="users" data-has-children="true">
+              <i class="bi bi-people-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Utilisateurs</span>
+              <i class="bi bi-chevron-down sidebar__link-arrow"></i>
+            </button>
+            <ul class="sidebar__submenu" id="submenu-users">
+              <li>
+                <a href="#" class="sidebar__sublink" data-id="users-list">
+                  <i class="bi bi-list-ul sidebar__sublink-icon"></i>
+                  <span>Liste</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar__sublink" data-id="users-roles">
+                  <i class="bi bi-shield-check sidebar__sublink-icon"></i>
+                  <span>Rôles</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="sidebar__sublink" data-id="users-permissions">
+                  <i class="bi bi-key sidebar__sublink-icon"></i>
+                  <span>Permissions</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="products">
+              <i class="bi bi-box-seam-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Produits</span>
+              <span class="sidebar__badge">12</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="orders">
+              <i class="bi bi-cart-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Commandes</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="invoices">
+              <i class="bi bi-receipt sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Factures</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section Configuration -->
+      <div class="sidebar__section">
+        <span class="sidebar__section-title">Configuration</span>
+        <ul class="sidebar__menu">
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="settings">
+              <i class="bi bi-gear-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Paramètres</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="integrations">
+              <i class="bi bi-plug-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Intégrations</span>
+            </a>
+          </li>
+          <li class="sidebar__menu-item">
+            <a href="#" class="sidebar__link" data-id="notifications">
+              <i class="bi bi-bell-fill sidebar__link-icon"></i>
+              <span class="sidebar__link-text">Notifications</span>
+              <span class="sidebar__badge">5</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- User Profile -->
+    <div class="sidebar__footer">
+      <div class="sidebar__user">
+        <div class="sidebar__user-avatar">
+          <span id="userInitials">JD</span>
+        </div>
+        <div class="sidebar__user-info">
+          <span class="sidebar__user-name">Jean Dupont</span>
+          <span class="sidebar__user-role">Administrateur</span>
+        </div>
+        <div class="sidebar__user-menu-wrapper">
+          <button class="sidebar__user-action" id="userMenuToggle" aria-label="User menu">
+            <i class="bi bi-three-dots-vertical"></i>
+          </button>
+          <!-- Dropdown Menu -->
+          <div class="sidebar__user-dropdown" id="userDropdown">
+            <a href="#" class="sidebar__user-dropdown-item" id="profileLink">
+              <i class="bi bi-person-circle"></i>
+              <span>Mon profil</span>
+            </a>
+            <a href="#" class="sidebar__user-dropdown-item" id="settingsLink">
+              <i class="bi bi-gear"></i>
+              <span>Paramètres</span>
+            </a>
+            <div class="sidebar__user-dropdown-divider"></div>
+            <a href="#" class="sidebar__user-dropdown-item sidebar__user-dropdown-item--danger" id="logoutLink">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Déconnexion</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT (pour démo) -->
+  <main class="main-content">
+    <h1>Bienvenue sur le Dashboard</h1>
+    <p>Cliquez sur les éléments de la sidebar pour interagir. Utilisez le bouton chevron pour réduire/agrandir la sidebar.</p>
+  </main>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // ═══════════════════════════════════════════════════════════════
+    // SIDEBAR DASHBOARD - JavaScript Vanilla
+    // ═══════════════════════════════════════════════════════════════
+
+    (function() {
+      'use strict';
+
+      // Éléments DOM
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const toggleIcon = document.getElementById('toggleIcon');
+      const userMenuToggle = document.getElementById('userMenuToggle');
+      const userDropdown = document.getElementById('userDropdown');
+      const menuLinks = document.querySelectorAll('.sidebar__link');
+      const subLinks = document.querySelectorAll('.sidebar__sublink');
+
+      // État
+      let isCollapsed = false;
+      let activeItemId = 'dashboard';
+      let openSubmenuId = null;
+
+      // ─────────────────────────────────────────────────────────────
+      // Toggle Sidebar
+      // ─────────────────────────────────────────────────────────────
+      toggleBtn.addEventListener('click', function() {
+        isCollapsed = !isCollapsed;
+        sidebar.classList.toggle('collapsed', isCollapsed);
+        toggleIcon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+        
+        // Fermer les sous-menus quand collapsed
+        if (isCollapsed) {
+          closeAllSubmenus();
+        }
+      });
+
+      // ─────────────────────────────────────────────────────────────
+      // Menu Navigation
+      // ─────────────────────────────────────────────────────────────
+      menuLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          
+          const itemId = this.dataset.id;
+          const hasChildren = this.dataset.hasChildren === 'true';
+
+          if (hasChildren) {
+            // Toggle sous-menu
+            toggleSubmenu(itemId);
+          } else {
+            // Sélectionner l'item
+            selectItem(itemId);
+          }
+        });
+      });
+
+      // ─────────────────────────────────────────────────────────────
+      // Sous-menu Navigation
+      // ─────────────────────────────────────────────────────────────
+      subLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const itemId = this.dataset.id;
+          selectSubItem(itemId);
+        });
+      });
+
+      // ─────────────────────────────────────────────────────────────
+      // User Dropdown
+      // ─────────────────────────────────────────────────────────────
+      userMenuToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('open');
+      });
+
+      // Fermer dropdown au clic extérieur
+      document.addEventListener('click', function(e) {
+        if (!userDropdown.contains(e.target) && !userMenuToggle.contains(e.target)) {
+          userDropdown.classList.remove('open');
+        }
+      });
+
+      // Actions dropdown
+      document.getElementById('profileLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Naviguer vers le profil');
+        userDropdown.classList.remove('open');
+        alert('Navigation vers Mon Profil');
+      });
+
+      document.getElementById('settingsLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Naviguer vers les paramètres');
+        userDropdown.classList.remove('open');
+        alert('Navigation vers Paramètres');
+      });
+
+      document.getElementById('logoutLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Déconnexion...');
+        userDropdown.classList.remove('open');
+        alert('Déconnexion en cours...');
+      });
+
+      // ─────────────────────────────────────────────────────────────
+      // Fonctions utilitaires
+      // ─────────────────────────────────────────────────────────────
+      function selectItem(itemId) {
+        // Retirer la classe active de tous les liens
+        menuLinks.forEach(function(l) {
+          l.classList.remove('active');
+        });
+        subLinks.forEach(function(l) {
+          l.classList.remove('active');
+        });
+
+        // Ajouter la classe active au lien cliqué
+        const activeLink = document.querySelector('.sidebar__link[data-id="' + itemId + '"]');
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+
+        activeItemId = itemId;
+        console.log('Item sélectionné:', itemId);
+      }
+
+      function selectSubItem(itemId) {
+        // Retirer la classe active de tous les liens
+        menuLinks.forEach(function(l) {
+          l.classList.remove('active');
+        });
+        subLinks.forEach(function(l) {
+          l.classList.remove('active');
+        });
+
+        // Ajouter la classe active au sous-lien cliqué
+        const activeLink = document.querySelector('.sidebar__sublink[data-id="' + itemId + '"]');
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+
+        activeItemId = itemId;
+        console.log('Sous-item sélectionné:', itemId);
+      }
+
+      function toggleSubmenu(itemId) {
+        const submenu = document.getElementById('submenu-' + itemId);
+        const parentLink = document.querySelector('.sidebar__link[data-id="' + itemId + '"]');
+
+        if (openSubmenuId === itemId) {
+          // Fermer le sous-menu
+          submenu.classList.remove('open');
+          parentLink.classList.remove('open');
+          openSubmenuId = null;
+        } else {
+          // Fermer les autres sous-menus
+          closeAllSubmenus();
+          
+          // Ouvrir ce sous-menu
+          submenu.classList.add('open');
+          parentLink.classList.add('open');
+          openSubmenuId = itemId;
+        }
+      }
+
+      function closeAllSubmenus() {
+        document.querySelectorAll('.sidebar__submenu').forEach(function(submenu) {
+          submenu.classList.remove('open');
+        });
+        document.querySelectorAll('.sidebar__link[data-has-children="true"]').forEach(function(link) {
+          link.classList.remove('open');
+        });
+        openSubmenuId = null;
+      }
+
+    })();
+  </script>
+
+</body>
+</html>

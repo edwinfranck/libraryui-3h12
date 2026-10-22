@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Footer - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f9fafb;color:#374151;min-height:100vh;display:flex;flex-direction:column}
+
+    .demo-page{max-width:1200px;margin:0 auto;padding:2rem;flex:1}
+    .demo-title{text-align:center;margin-bottom:3rem}
+    .demo-title h1{font-size:2rem;font-weight:800;color:#111827;margin:0 0 .5rem}
+    .demo-title p{color:#6b7280;font-size:1rem}
+    .variant-label{font-size:.85rem;font-weight:600;color:#4f46e5;text-transform:uppercase;letter-spacing:.05em;margin:2.5rem 0 1rem;padding-left:.5rem;border-left:3px solid #4f46e5}
+
+    /* ══════ FOOTER ══════ */
+    .footer{background:#111827;color:#d1d5db;border-radius:1rem;overflow:hidden;margin-bottom:2rem}
+    .footer-main{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:2.5rem;padding:3rem 2.5rem 2rem}
+    .footer-brand .logo-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+    .footer-brand .logo{width:40px;height:40px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:.625rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1.1rem}
+    .footer-brand .brand-name{font-size:1.25rem;font-weight:700;color:#f9fafb}
+    .footer-brand p{font-size:.875rem;line-height:1.7;color:#9ca3af;margin:0 0 1.5rem;max-width:320px}
+    .footer-social{display:flex;gap:.5rem}
+    .footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border-radius:.5rem;color:#9ca3af;text-decoration:none;transition:all .2s;font-size:1rem}
+    .footer-social a:hover{background:#4f46e5;color:#fff;transform:translateY(-2px)}
+
+    .footer-col h4{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#f9fafb;margin:0 0 1.25rem}
+    .footer-col ul{list-style:none}
+    .footer-col li{margin-bottom:.625rem}
+    .footer-col a{font-size:.875rem;color:#9ca3af;text-decoration:none;transition:color .2s;display:flex;align-items:center;gap:.375rem}
+    .footer-col a:hover{color:#fff}
+    .footer-col .new-badge{font-size:.65rem;padding:.125rem .375rem;background:#4f46e5;color:#fff;border-radius:9999px;font-weight:600}
+
+    .footer-newsletter{padding:1.5rem 2.5rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between;gap:1.5rem}
+    .newsletter-text h4{font-size:.95rem;font-weight:600;color:#f9fafb;margin:0 0 .25rem}
+    .newsletter-text p{font-size:.8rem;color:#9ca3af;margin:0}
+    .newsletter-form{display:flex;gap:.5rem}
+    .newsletter-form input{padding:.625rem 1rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:.5rem;color:#f9fafb;font-size:.85rem;min-width:260px;outline:none;transition:border-color .2s}
+    .newsletter-form input::placeholder{color:#6b7280}
+    .newsletter-form input:focus{border-color:#4f46e5}
+    .newsletter-form button{padding:.625rem 1.25rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;border-radius:.5rem;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .newsletter-form button:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,.4)}
+
+    .footer-bottom{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2.5rem;border-top:1px solid rgba(255,255,255,.06);font-size:.8rem;color:#6b7280}
+    .footer-bottom-links{display:flex;gap:1.5rem}
+    .footer-bottom-links a{color:#6b7280;text-decoration:none;transition:color .2s}
+    .footer-bottom-links a:hover{color:#d1d5db}
+
+    /* ── SIMPLE VARIANT ── */
+    .footer--simple{padding:2rem 2.5rem}
+    .footer--simple .simple-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
+    .footer--simple .simple-links{display:flex;gap:1.5rem}
+    .footer--simple .simple-links a{font-size:.875rem;color:#9ca3af;text-decoration:none;transition:color .2s}
+    .footer--simple .simple-links a:hover{color:#fff}
+    .footer--simple .simple-bottom{display:flex;align-items:center;justify-content:space-between;font-size:.8rem;color:#6b7280}
+
+    @media(max-width:768px){
+      .footer-main{grid-template-columns:1fr 1fr;gap:2rem}
+      .footer-newsletter{flex-direction:column;align-items:flex-start}
+      .newsletter-form{width:100%;flex-direction:column}
+      .newsletter-form input{min-width:auto;width:100%}
+      .footer-bottom{flex-direction:column;gap:.75rem;text-align:center}
+    }
+    @media(max-width:480px){
+      .footer-main{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="demo-page">
+  <div class="demo-title">
+
+  <!-- Simple Footer -->
+  <footer class="footer footer--simple">
+    <div class="simple-top">
+      <div class="logo-row" style="display:flex;align-items:center;gap:.75rem">
+        <div class="logo" style="width:36px;height:36px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:.5rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem">P</div>
+        <span style="font-size:1.1rem;font-weight:700;color:#f9fafb">Platform</span>
+      </div>
+      <div class="simple-links">
+        <a href="#">Produit</a>
+        <a href="#">Fonctionnalités</a>
+        <a href="#">Tarifs</a>
+        <a href="#">Blog</a>
+        <a href="#">Support</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="simple-bottom">
+      <span>© 2026 Platform. Tous droits réservés.</span>
+      <div class="footer-social">
+        <a href="#"><i class="bi bi-twitter-x"></i></a>
+        <a href="#"><i class="bi bi-linkedin"></i></a>
+        <a href="#"><i class="bi bi-github"></i></a>
+      </div>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirmation Types - Premium UI Library</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f8f9fa;
+        color: #111827;
+        line-height: 1.6;
+        height: 500px;
+      }
+      .confirmation-showcase {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 1rem 0;
+      }
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+      .trigger-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 1rem 1.25rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #374151;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .trigger-btn i {
+        font-size: 1.1rem;
+      }
+      .trigger-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .trigger-btn--danger {
+        border-color: #fecaca;
+      }
+      .trigger-btn--danger:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+      }
+      .trigger-btn--danger i {
+        color: #ef4444;
+      }
+      .trigger-btn--warning {
+        border-color: #fde68a;
+      }
+      .trigger-btn--warning:hover {
+        border-color: #f59e0b;
+        color: #b45309;
+      }
+      .trigger-btn--warning i {
+        color: #f59e0b;
+      }
+      .trigger-btn--info {
+        border-color: #bfdbfe;
+      }
+      .trigger-btn--info:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+      }
+      .trigger-btn--info i {
+        color: #3b82f6;
+      }
+      .trigger-btn--success {
+        border-color: #bbf7d0;
+      }
+      .trigger-btn--success:hover {
+        border-color: #10b981;
+        color: #10b981;
+      }
+      .trigger-btn--success i {
+        color: #10b981;
+      }
+      .dialog-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 1000;
+        animation: fadeIn 0.2s ease;
+      }
+      .dialog-overlay.active {
+        display: flex;
+      }
+      .dialog {
+        background: white;
+        border-radius: 1rem;
+        max-width: 420px;
+        width: 100%;
+        padding: 2rem;
+        animation: scaleIn 0.2s ease;
+      }
+      .dialog-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 1.75rem;
+      }
+      .dialog--danger .dialog-icon {
+        background: #fee2e2;
+        color: #ef4444;
+      }
+      .dialog--warning .dialog-icon {
+        background: #fef3c7;
+        color: #f59e0b;
+      }
+      .dialog--info .dialog-icon {
+        background: #dbeafe;
+        color: #3b82f6;
+      }
+      .dialog--success .dialog-icon {
+        background: #d1fae5;
+        color: #10b981;
+      }
+      .dialog-content {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      .dialog-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+      }
+      .dialog-message {
+        font-size: 0.95rem;
+        color: #6b7280;
+        line-height: 1.6;
+        margin: 0;
+      }
+      .dialog-input {
+        margin-top: 1.25rem;
+      }
+      .dialog-input input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        text-align: center;
+      }
+      .dialog-input input:focus {
+        outline: none;
+        border-color: #ef4444;
+      }
+      .dialog-actions {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .btn {
+        flex: 1;
+        padding: 0.875rem 1.25rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn--cancel {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .btn--cancel:hover:not(:disabled) {
+        background: #e5e7eb;
+      }
+      .btn--danger {
+        background: #ef4444;
+        color: white;
+      }
+      .btn--danger:hover:not(:disabled) {
+        background: #dc2626;
+      }
+      .btn--warning {
+        background: #f59e0b;
+        color: white;
+      }
+      .btn--warning:hover:not(:disabled) {
+        background: #d97706;
+      }
+      .btn--info {
+        background: #3b82f6;
+        color: white;
+      }
+      .btn--info:hover:not(:disabled) {
+        background: #2563eb;
+      }
+      .btn--success {
+        background: #10b981;
+        color: white;
+      }
+      .btn--success:hover:not(:disabled) {
+        background: #059669;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @media (max-width: 640px) {
+        .dialog {
+          padding: 1.5rem;
+        }
+        .dialog-actions {
+          flex-direction: column-reverse;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="confirmation-showcase">
+      <h2 class="section-title">Types de Confirmation</h2>
+      <div class="button-grid" id="buttonGrid"></div>
+      <div class="dialog-overlay" id="overlay">
+        <div class="dialog" id="dialog" onclick="event.stopPropagation()">
+          <div class="dialog-icon"><i class="bi" id="dialogIcon"></i></div>
+          <div class="dialog-content">
+            <h3 class="dialog-title" id="dialogTitle"></h3>
+            <p class="dialog-message" id="dialogMessage"></p>
+            <div class="dialog-input" id="dialogInput" style="display: none">
+              <input type="text" id="inputField" placeholder="" />
+            </div>
+          </div>
+          <div class="dialog-actions">
+            <button class="btn btn--cancel" onclick="closeDialog()">Annuler</button>
+            <button class="btn" id="confirmBtn" onclick="onConfirm()">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var dialogs = [
+          {
+            id: 'delete',
+            type: 'danger',
+            title: 'Supprimer cet élément ?',
+            message:
+              'Cette action est irréversible. Toutes les données associées seront définitivement supprimées.',
+            icon: 'bi-trash3',
+            confirmLabel: 'Supprimer',
+            cancelLabel: 'Annuler',
+          },
+          {
+            id: 'logout',
+            type: 'warning',
+            title: 'Se déconnecter ?',
+            message:
+              'Vous allez être déconnecté de votre compte. Les modifications non enregistrées seront perdues.',
+            icon: 'bi-box-arrow-right',
+            confirmLabel: 'Se déconnecter',
+            cancelLabel: 'Rester connecté',
+          },
+          {
+            id: 'save',
+            type: 'info',
+            title: 'Enregistrer les modifications ?',
+            message:
+              'Vous avez des modifications non enregistrées. Voulez-vous les sauvegarder avant de continuer ?',
+            icon: 'bi-floppy',
+            confirmLabel: 'Enregistrer',
+            cancelLabel: 'Ne pas enregistrer',
+          },
+          {
+            id: 'publish',
+            type: 'success',
+            title: 'Publier ce contenu ?',
+            message: 'Une fois publié, ce contenu sera visible par tous les utilisateurs.',
+            icon: 'bi-send',
+            confirmLabel: 'Publier',
+            cancelLabel: 'Annuler',
+          },
+          {
+            id: 'delete-account',
+            type: 'danger',
+            title: 'Supprimer votre compte ?',
+            message:
+              'Pour confirmer la suppression définitive de votre compte, tapez "SUPPRIMER" ci-dessous.',
+            icon: 'bi-person-x',
+            confirmLabel: 'Supprimer mon compte',
+            cancelLabel: 'Annuler',
+            requireInput: true,
+            inputPlaceholder: 'Tapez SUPPRIMER',
+          },
+        ];
+        var activeDialog = null;
+        var grid = document.getElementById('buttonGrid');
+        dialogs.forEach(function (d) {
+          var btn = document.createElement('button');
+          btn.className = 'trigger-btn trigger-btn--' + d.type;
+          btn.innerHTML = '<i class="bi ' + d.icon + '"></i> ' + d.title;
+          btn.onclick = function () {
+            openDialog(d.id);
+          };
+          grid.appendChild(btn);
+        });
+        window.openDialog = function (id) {
+          activeDialog = dialogs.find(function (d) {
+            return d.id === id;
+          });
+          if (!activeDialog) return;
+          document.getElementById('dialog').className = 'dialog dialog--' + activeDialog.type;
+          document.getElementById('dialogIcon').className = 'bi ' + activeDialog.icon;
+          document.getElementById('dialogTitle').textContent = activeDialog.title;
+          document.getElementById('dialogMessage').textContent = activeDialog.message;
+          var inputDiv = document.getElementById('dialogInput');
+          var inputField = document.getElementById('inputField');
+          if (activeDialog.requireInput) {
+            inputDiv.style.display = 'block';
+            inputField.placeholder = activeDialog.inputPlaceholder || '';
+            inputField.value = '';
+          } else {
+            inputDiv.style.display = 'none';
+          }
+          var confirmBtn = document.getElementById('confirmBtn');
+          confirmBtn.className = 'btn btn--' + activeDialog.type;
+          confirmBtn.textContent = activeDialog.confirmLabel;
+          confirmBtn.disabled = !!activeDialog.requireInput;
+          document.getElementById('overlay').classList.add('active');
+          if (activeDialog.requireInput) {
+            inputField.focus();
+            inputField.oninput = function () {
+              confirmBtn.disabled = inputField.value.toUpperCase() !== 'SUPPRIMER';
+            };
+          }
+        };
+        window.closeDialog = function () {
+          document.getElementById('overlay').classList.remove('active');
+          activeDialog = null;
+        };
+        window.onConfirm = function () {
+          if (activeDialog && activeDialog.requireInput) {
+            var v = document.getElementById('inputField').value;
+            if (v.toUpperCase() !== 'SUPPRIMER') return;
+          }
+          closeDialog();
+        };
+        document.getElementById('overlay').onclick = function () {
+          closeDialog();
+        };
+      })();
+    </script>
+  </body>
+</html>

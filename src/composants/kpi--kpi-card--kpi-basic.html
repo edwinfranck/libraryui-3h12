@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KPI Cards Basiques - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f8fafc;line-height:1.5}
+
+    .kpi-showcase{max-width:1400px;margin:0 auto;padding:2rem}
+    .page-title{font-size:2rem;font-weight:700;color:#111827;margin:0 0 .5rem}
+    .page-subtitle{color:#6b7280;margin:0 0 2rem}
+
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
+
+    .kpi-card{background:#fff;border-radius:1rem;box-shadow:0 4px 20px rgba(0,0,0,.06);transition:transform .2s,box-shadow .2s}
+    .kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.1)}
+
+    .kpi-card--basic{display:flex;align-items:flex-start;gap:1rem;padding:1.5rem}
+
+    .kpi-card__icon{display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:.75rem;font-size:1.5rem;flex-shrink:0}
+    .kpi-card__icon--primary{background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#4f46e5}
+    .kpi-card__icon--success{background:linear-gradient(135deg,#ecfdf5,#d1fae5);color:#10b981}
+    .kpi-card__icon--warning{background:linear-gradient(135deg,#fffbeb,#fef3c7);color:#f59e0b}
+    .kpi-card__icon--danger{background:linear-gradient(135deg,#fee2e2,#fecaca);color:#ef4444}
+    .kpi-card__icon--info{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);color:#0ea5e9}
+
+    .kpi-card__content{flex:1;display:flex;flex-direction:column}
+    .kpi-card__title{font-size:.8rem;font-weight:500;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+    .kpi-card__value{font-size:1.75rem;font-weight:700;color:#111827;line-height:1.2;margin:.25rem 0}
+
+    .kpi-card__change{display:flex;align-items:center;gap:.25rem;font-size:.8rem;font-weight:600}
+    .kpi-card__change i{font-size:1rem}
+    .change-period{font-weight:400;color:#9ca3af;margin-left:.25rem}
+    .change--increase{color:#10b981}
+    .change--decrease{color:#ef4444}
+    .change--neutral{color:#6b7280}
+
+    @media(max-width:768px){.kpi-showcase{padding:1rem}.kpi-grid{grid-template-columns:1fr}.kpi-card__value{font-size:1.5rem}}
+  </style>
+</head>
+<body>
+<div class="kpi-showcase">
+  <h1 class="page-title">Cartes basiques avec icônes</h1>
+  <p class="page-subtitle">Indicateurs clés avec icônes colorées et tendances</p>
+  <div class="kpi-grid" id="basicKPIsGrid"></div>
+</div>
+
+<script>
+(function() {
+  var basicKPIs = [
+    { id:'revenue', title:"Chiffre d'affaires", value:284750, format:'currency', change:{value:12.5,type:'increase',period:'vs mois dernier'}, icon:'bi-currency-euro', iconColor:'primary' },
+    { id:'orders', title:'Commandes', value:2845, format:'number', change:{value:8.2,type:'increase',period:'vs mois dernier'}, icon:'bi-bag-check', iconColor:'success' },
+    { id:'customers', title:'Nouveaux clients', value:456, format:'number', change:{value:-3.1,type:'decrease',period:'vs mois dernier'}, icon:'bi-people', iconColor:'warning' },
+    { id:'conversion', title:'Taux de conversion', value:4.28, format:'percentage', change:{value:0.5,type:'increase',period:'vs mois dernier'}, icon:'bi-graph-up-arrow', iconColor:'info' }
+  ];
+
+  function formatValue(kpi) {
+    if (typeof kpi.value === 'string') return kpi.value;
+    switch (kpi.format) {
+      case 'currency': return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(kpi.value);
+      case 'percentage': return kpi.value + '%';
+      default: return new Intl.NumberFormat('fr-FR').format(kpi.value);
+    }
+  }
+
+  function getChangeIcon(type) {
+    if (type === 'increase') return 'bi-arrow-up-short';
+    if (type === 'decrease') return 'bi-arrow-down-short';
+    return 'bi-dash';
+  }
+
+  var container = document.getElementById('basicKPIsGrid');
+  container.innerHTML = basicKPIs.map(function(kpi) {
+    return '<div class="kpi-card kpi-card--basic">' +
+      '<div class="kpi-card__icon kpi-card__icon--' + kpi.iconColor + '"><i class="bi ' + kpi.icon + '"></i></div>' +
+      '<div class="kpi-card__content">' +
+        '<span class="kpi-card__title">' + kpi.title + '</span>' +
+        '<span class="kpi-card__value">' + formatValue(kpi) + '</span>' +
+        (kpi.change ? '<div class="kpi-card__change change--' + kpi.change.type + '">' +
+          '<i class="bi ' + getChangeIcon(kpi.change.type) + '"></i>' +
+          '<span>' + (kpi.change.value > 0 ? '+' : '') + kpi.change.value + '%</span>' +
+          '<span class="change-period">' + kpi.change.period + '</span>' +
+        '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accordion 1</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; }
+    .acc1 { max-width: 720px; margin: 0 auto; padding: 4rem 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .acc1__header { text-align: center; margin-bottom: 2.5rem; }
+    .acc1__header h2 { font-size: 2rem; font-weight: 800; color: #111827; margin: 0 0 .5rem; }
+    .acc1__header p { color: #6b7280; font-size: .95rem; margin: 0; }
+    .acc1__item { border: 1px solid #e5e7eb; border-radius: .875rem; margin-bottom: .75rem; overflow: hidden; transition: box-shadow .2s; }
+    .acc1__item.open { box-shadow: 0 4px 20px rgba(79,70,229,.08); border-color: #c7d2fe; }
+    .acc1__trigger { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; background: #fff; border: none; cursor: pointer; font-size: .95rem; font-weight: 600; color: #111827; text-align: left; gap: 1rem; transition: background .15s; }
+    .acc1__trigger:hover { background: #f9fafb; }
+    .acc1__item.open .acc1__trigger { background: #eef2ff; color: #4f46e5; }
+    .acc1__trigger i { flex-shrink: 0; font-size: 1rem; color: #4f46e5; }
+    .acc1__body { padding: 0 1.5rem 1.25rem; background: #fff; }
+    .acc1__body p { margin: 0; font-size: .875rem; color: #6b7280; line-height: 1.8; }
+  </style>
+</head>
+<body>
+<div class="acc1">
+  <div class="acc1__header"><h2>Questions fréquentes</h2><p>Tout ce que vous devez savoir avant de commencer.</p></div>
+  <div class="acc1__list">
+    <div class="acc1__item open">
+      <button class="acc1__trigger" onclick="toggle(this)"><span>Comment créer un compte ?</span><i class="bi bi-dash-lg"></i></button>
+      <div class="acc1__body"><p>Cliquez sur "S'inscrire" en haut à droite, renseignez votre email et mot de passe, puis confirmez votre adresse email.</p></div>
+    </div>
+    <div class="acc1__item">
+      <button class="acc1__trigger" onclick="toggle(this)"><span>Est-ce que le service est gratuit ?</span><i class="bi bi-plus-lg"></i></button>
+      <div class="acc1__body" style="display:none"><p>Nous proposons un plan gratuit avec les fonctionnalités essentielles, et des plans premium pour les besoins avancés.</p></div>
+    </div>
+    <div class="acc1__item">
+      <button class="acc1__trigger" onclick="toggle(this)"><span>Comment réinitialiser mon mot de passe ?</span><i class="bi bi-plus-lg"></i></button>
+      <div class="acc1__body" style="display:none"><p>Rendez-vous sur la page de connexion et cliquez sur "Mot de passe oublié". Un email vous sera envoyé.</p></div>
+    </div>
+    <div class="acc1__item">
+      <button class="acc1__trigger" onclick="toggle(this)"><span>Puis-je annuler mon abonnement à tout moment ?</span><i class="bi bi-plus-lg"></i></button>
+      <div class="acc1__body" style="display:none"><p>Oui, vous pouvez annuler votre abonnement à tout moment depuis votre tableau de bord, sans frais.</p></div>
+    </div>
+    <div class="acc1__item">
+      <button class="acc1__trigger" onclick="toggle(this)"><span>Quels modes de paiement acceptez-vous ?</span><i class="bi bi-plus-lg"></i></button>
+      <div class="acc1__body" style="display:none"><p>Nous acceptons les cartes bancaires (Visa, Mastercard), PayPal, et les virements SEPA.</p></div>
+    </div>
+  </div>
+</div>
+<script>
+function toggle(btn) {
+  const item = btn.closest('.acc1__item');
+  const body = item.querySelector('.acc1__body');
+  const icon = btn.querySelector('i');
+  const isOpen = item.classList.contains('open');
+  item.classList.toggle('open', !isOpen);
+  body.style.display = isOpen ? 'none' : 'block';
+  icon.className = 'bi ' + (isOpen ? 'bi-plus-lg' : 'bi-dash-lg');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Preview</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --tb-bg:       #1e2330;
+  --tb-hover:    #2d3448;
+  --tb-border:   #2d3448;
+  --accent:      #ef4444;
+  --canvas-bg:   #3a3f4e;
+  --page-bg:     #ffffff;
+  --page-shadow: 0 8px 40px rgba(0,0,0,0.45);
+  --sidebar-w:   160px;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 800px;
+  overflow: hidden;
+  background: var(--canvas-bg);
+}
+
+/* ── WRAPPER ─────────────────────────────────────────── */
+.pdf-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── TOOLBAR ─────────────────────────────────────────── */
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  height: 48px;
+  background: var(--tb-bg);
+  border-bottom: 1px solid var(--tb-border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.tb-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-radius: 5px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tb-btn:hover:not(:disabled) {
+  background: var(--tb-hover);
+  color: #e2e8f0;
+}
+.tb-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.tb-btn.accent:hover:not(:disabled) {
+  background: rgba(239,68,68,0.15);
+  color: var(--accent);
+}
+
+.tb-sep {
+  width: 1px;
+  height: 18px;
+  background: #2d3448;
+  margin: 0 0.25rem;
+}
+
+.zoom-badge {
+  min-width: 42px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: #2d3448;
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+
+.page-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+}
+.page-current { color: #e2e8f0; font-weight: 700; }
+.page-sep     { color: #4b5563; }
+
+.doc-name {
+  font-size: 0.75rem;
+  color: #64748b;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── BODY ────────────────────────────────────────────── */
+.pdf-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.pdf-sidebar {
+  width: var(--sidebar-w);
+  background: #252a38;
+  border-right: 1px solid #2d3448;
+  overflow-y: auto;
+  padding: 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  transition: width 0.2s ease;
+}
+.pdf-sidebar.hidden {
+  display: none;
+}
+.pdf-sidebar::-webkit-scrollbar { width: 4px; }
+.pdf-sidebar::-webkit-scrollbar-track { background: transparent; }
+.pdf-sidebar::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+
+.thumb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.thumb-item:hover { background: rgba(255,255,255,0.05); }
+.thumb-item.active .thumb-page {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.3);
+}
+
+.thumb-page {
+  width: 100px;
+  height: 130px;
+  background: white;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  padding: 8px 6px 6px;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.thumb-title-line {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin-bottom: 8px;
+  width: 80%;
+}
+
+.thumb-line {
+  height: 5px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  margin-bottom: 4px;
+}
+
+.thumb-page-num {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 9px;
+  color: #9ca3af;
+}
+
+.thumb-label {
+  font-size: 0.6875rem;
+  color: #64748b;
+}
+
+/* ── CANVAS ZONE ─────────────────────────────────────── */
+.pdf-canvas-zone {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--canvas-bg);
+}
+.pdf-canvas-zone::-webkit-scrollbar { width: 6px; }
+.pdf-canvas-zone::-webkit-scrollbar-track { background: transparent; }
+.pdf-canvas-zone::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+
+.pdf-page-wrap {
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+}
+
+/* ── PAGE ────────────────────────────────────────────── */
+.pdf-page {
+  width: 640px;
+  min-height: 904px;
+  background: var(--page-bg);
+  box-shadow: var(--page-shadow);
+  padding: 3rem 3.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f3f4f6;
+  margin-bottom: 2rem;
+}
+
+.page-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: #fef2f2;
+  border-radius: 6px;
+}
+
+.logo-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+.page-header-num {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.page-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.title-rule {
+  width: 48px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin-bottom: 1.75rem;
+}
+
+.page-para {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: #374151;
+  margin: 0 0 1.125rem 0;
+  text-align: justify;
+}
+
+/* ── TABLE ───────────────────────────────────────────── */
+.sim-table {
+  margin: 1.25rem 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+.sim-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.sim-table th {
+  background: #1e2330;
+  color: #e2e8f0;
+  padding: 0.625rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sim-table td {
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+.sim-table tr:last-child td { border-bottom: none; }
+.sim-table tr:nth-child(even) td { background: #f9fafb; }
+.sim-table .pos { color: #16a34a; font-weight: 600; }
+.sim-table .neg { color: #dc2626; font-weight: 600; }
+
+/* ── LIST ────────────────────────────────────────────── */
+.sim-list {
+  margin: 1.25rem 0;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.sim-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.5;
+}
+.sim-list li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin-top: 0.45rem;
+}
+
+/* ── PAGE FOOTER ─────────────────────────────────────── */
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid #f3f4f6;
+  font-size: 0.6875rem;
+  color: #9ca3af;
+}
+</style>
+</head>
+<body>
+
+<div class="pdf-preview" id="app">
+
+  <!-- TOOLBAR -->
+  <div class="pdf-toolbar">
+    <div class="toolbar-left">
+      <!-- Toggle sidebar -->
+      <button class="tb-btn" onclick="app.toggleSidebar()" title="Miniatures">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>
+      </button>
+      <div class="tb-sep"></div>
+      <!-- Zoom out -->
+      <button class="tb-btn" id="btnZoomOut" onclick="app.zoomOut()" title="Zoom -">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </button>
+      <div class="zoom-badge" id="zoomBadge">100%</div>
+      <!-- Zoom in -->
+      <button class="tb-btn" id="btnZoomIn" onclick="app.zoomIn()" title="Zoom +">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+      </button>
+      <!-- Reset zoom -->
+      <button class="tb-btn" onclick="app.resetZoom()" title="Réinitialiser">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="toolbar-center">
+      <!-- Prev page -->
+      <button class="tb-btn nav" id="btnPrev" onclick="app.prevPage()" title="Page précédente">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div class="page-counter">
+        <span class="page-current" id="pageCurrent">1</span>
+        <span class="page-sep">/</span>
+        <span class="page-total" id="pageTotal">6</span>
+      </div>
+      <!-- Next page -->
+      <button class="tb-btn nav" id="btnNext" onclick="app.nextPage()" title="Page suivante">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="toolbar-right">
+      <span class="doc-name">rapport-financier.pdf</span>
+      <div class="tb-sep"></div>
+      <button class="tb-btn accent" title="Télécharger">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button class="tb-btn" title="Partager">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="pdf-body">
+
+    <!-- SIDEBAR -->
+    <div class="pdf-sidebar" id="sidebar"></div>
+
+    <!-- CANVAS -->
+    <div class="pdf-canvas-zone">
+      <div class="pdf-page-wrap" id="pageWrap">
+        <div class="pdf-page" id="pageContent"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+
+  /* ── DATA ─────────────────────────────────────────── */
+  var file = {
+    name: 'rapport-financier.pdf',
+    size: '1.8 MB',
+    date: new Date('2024-01-14'),
+    author: 'Pierre Durand',
+    totalPages: 6
+  };
+
+  var PAGES = [
+    {
+      page: 1,
+      title: 'Rapport Financier — Q4 2024',
+      paragraphs: [
+        "Le présent rapport présente une synthèse détaillée des performances financières du quatrième trimestre 2024. Les résultats témoignent d'une croissance soutenue malgré un contexte macroéconomique incertain.",
+        "Le chiffre d'affaires consolidé atteint 12,4 M€ sur la période, soit une progression de +18,3 % par rapport au même trimestre de l'exercice précédent."
+      ]
+    },
+    {
+      page: 2,
+      title: '1. Synthèse des résultats',
+      paragraphs: [
+        "L'EBITDA s'établit à 3,1 M€, représentant une marge de 25 %, en amélioration de 2 points sur un an. Cette performance reflète les efforts de maîtrise des coûts opérationnels engagés depuis le T2 2024."
+      ],
+      hasTable: true
+    },
+    {
+      page: 3,
+      title: '2. Analyse par segment',
+      paragraphs: [
+        "Le segment B2B représente désormais 68 % du chiffre d'affaires global, contre 61 % en 2023. La montée en puissance des contrats cadres pluriannuels explique cette progression structurelle."
+      ],
+      hasList: true
+    },
+    {
+      page: 4,
+      title: '3. Flux de trésorerie',
+      paragraphs: [
+        "La capacité d'autofinancement dégagée sur la période s'élève à 2,7 M€. Les investissements nets (CAPEX) représentent 0,9 M€, essentiellement consacrés au renouvellement des infrastructures IT et à l'extension de la capacité de production.",
+        "La dette nette se réduit de 14 % pour atteindre 4,2 M€ en fin de trimestre."
+      ]
+    },
+    {
+      page: 5,
+      title: '4. Perspectives 2025',
+      paragraphs: [
+        "Le Conseil d'Administration confirme les objectifs annoncés pour l'exercice 2025 : un chiffre d'affaires cible de 52 M€ (+12 %) et une marge EBITDA supérieure à 26 %.",
+        "Les priorités stratégiques demeurent l'expansion internationale, l'accélération du développement produit et le renforcement de la qualité de service clients."
+      ],
+      hasList: true
+    },
+    {
+      page: 6,
+      title: 'Annexes',
+      paragraphs: [
+        "Les états financiers détaillés, le rapport des commissaires aux comptes et les notes annexes aux comptes consolidés sont disponibles sur demande auprès de la Direction Financière."
+      ]
+    }
+  ];
+
+  /* ── STATE ────────────────────────────────────────── */
+  var state = {
+    currentPage: 1,
+    zoom: 100,
+    showSidebar: true
+  };
+
+  /* ── HELPERS ──────────────────────────────────────── */
+  function formatDate(date) {
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function getRandomWidth(page, line) {
+    var widths = ['85%', '70%', '90%', '60%', '78%', '95%', '65%', '82%'];
+    return widths[(page * 3 + line) % widths.length];
+  }
+
+  /* ── RENDER SIDEBAR ───────────────────────────────── */
+  function renderSidebar() {
+    var sidebar = document.getElementById('sidebar');
+    sidebar.innerHTML = '';
+    PAGES.forEach(function (p) {
+      var item = document.createElement('div');
+      item.className = 'thumb-item' + (p.page === state.currentPage ? ' active' : '');
+      item.onclick = function () { app.goToPage(p.page); };
+
+      var thumbPage = document.createElement('div');
+      thumbPage.className = 'thumb-page';
+
+      var titleLine = document.createElement('div');
+      titleLine.className = 'thumb-title-line';
+      thumbPage.appendChild(titleLine);
+
+      [1, 2, 3, 4].forEach(function (l) {
+        var line = document.createElement('div');
+        line.className = 'thumb-line';
+        line.style.width = getRandomWidth(p.page, l);
+        thumbPage.appendChild(line);
+      });
+
+      var pageNum = document.createElement('div');
+      pageNum.className = 'thumb-page-num';
+      pageNum.textContent = p.page;
+      thumbPage.appendChild(pageNum);
+
+      var label = document.createElement('span');
+      label.className = 'thumb-label';
+      label.textContent = 'Page ' + p.page;
+
+      item.appendChild(thumbPage);
+      item.appendChild(label);
+      sidebar.appendChild(item);
+    });
+  }
+
+  /* ── RENDER PAGE ──────────────────────────────────── */
+  function renderPage() {
+    var p = PAGES.find(function (x) { return x.page === state.currentPage; });
+    if (!p) return;
+
+    var content = document.getElementById('pageContent');
+
+    /* Re-trigger animation */
+    content.style.animation = 'none';
+    content.offsetHeight; /* reflow */
+    content.style.animation = '';
+
+    var html = '';
+
+    /* Header */
+    html += '<div class="page-header">';
+    html += '  <div class="page-header-logo">';
+    html += '    <div class="logo-icon">';
+    html += '      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">';
+    html += '        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>';
+    html += '        <polyline points="14 2 14 8 20 8"/>';
+    html += '      </svg>';
+    html += '    </div>';
+    html += '    <span class="logo-text">Rapport Financier Q4 2024</span>';
+    html += '  </div>';
+    html += '  <span class="page-header-num">Page ' + state.currentPage + '</span>';
+    html += '</div>';
+
+    /* Title */
+    html += '<h1 class="page-title">' + escHtml(p.title) + '</h1>';
+    html += '<div class="title-rule"></div>';
+
+    /* Paragraphs */
+    p.paragraphs.forEach(function (para) {
+      html += '<p class="page-para">' + escHtml(para) + '</p>';
+    });
+
+    /* Table */
+    if (p.hasTable) {
+      html += '<div class="sim-table">';
+      html += '  <table>';
+      html += '    <thead><tr><th>Indicateur</th><th>Q4 2024</th><th>Q4 2023</th><th>Variation</th></tr></thead>';
+      html += '    <tbody>';
+      html += '      <tr><td>Chiffre d\'affaires</td><td>12,4 M€</td><td>10,5 M€</td><td class="pos">+18,3 %</td></tr>';
+      html += '      <tr><td>EBITDA</td><td>3,1 M€</td><td>2,4 M€</td><td class="pos">+29,2 %</td></tr>';
+      html += '      <tr><td>Résultat net</td><td>1,9 M€</td><td>1,5 M€</td><td class="pos">+26,7 %</td></tr>';
+      html += '      <tr><td>Dette nette</td><td>4,2 M€</td><td>4,9 M€</td><td class="neg">−14,3 %</td></tr>';
+      html += '    </tbody>';
+      html += '  </table>';
+      html += '</div>';
+    }
+
+    /* List */
+    if (p.hasList) {
+      html += '<ul class="sim-list">';
+      html += '  <li>Expansion internationale — marchés DACH et Benelux</li>';
+      html += '  <li>Accélération du développement produit (roadmap 2025)</li>';
+      html += '  <li>Renforcement du service client et de la satisfaction NPS</li>';
+      html += '  <li>Optimisation de la structure de coûts opérationnels</li>';
+      html += '</ul>';
+    }
+
+    /* Footer */
+    html += '<div class="page-footer">';
+    html += '  <span>Confidentiel — Usage interne</span>';
+    html += '  <span>' + escHtml(file.author) + ' · ' + formatDate(file.date) + '</span>';
+    html += '</div>';
+
+    content.innerHTML = html;
+  }
+
+  /* ── RENDER UI ────────────────────────────────────── */
+  function renderUI() {
+    /* Zoom */
+    document.getElementById('zoomBadge').textContent = state.zoom + '%';
+    document.getElementById('pageWrap').style.transform = 'scale(' + state.zoom / 100 + ')';
+    document.getElementById('btnZoomOut').disabled = state.zoom <= 50;
+    document.getElementById('btnZoomIn').disabled  = state.zoom >= 200;
+
+    /* Pagination */
+    document.getElementById('pageCurrent').textContent = state.currentPage;
+    document.getElementById('pageTotal').textContent   = file.totalPages;
+    document.getElementById('btnPrev').disabled = state.currentPage === 1;
+    document.getElementById('btnNext').disabled = state.currentPage === file.totalPages;
+
+    /* Sidebar */
+    var sidebar = document.getElementById('sidebar');
+    if (state.showSidebar) {
+      sidebar.classList.remove('hidden');
+    } else {
+      sidebar.classList.add('hidden');
+    }
+  }
+
+  /* ── FULL RENDER ──────────────────────────────────── */
+  function render() {
+    renderUI();
+    renderSidebar();
+    renderPage();
+  }
+
+  /* ── HTML ESCAPE ──────────────────────────────────── */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── PUBLIC API (exposed to onclick attributes) ───── */
+  window.app = {
+    prevPage: function () {
+      if (state.currentPage > 1) { state.currentPage--; render(); }
+    },
+    nextPage: function () {
+      if (state.currentPage < file.totalPages) { state.currentPage++; render(); }
+    },
+    goToPage: function (n) {
+      state.currentPage = n; render();
+    },
+    zoomIn: function () {
+      if (state.zoom < 200) { state.zoom += 25; render(); }
+    },
+    zoomOut: function () {
+      if (state.zoom > 50) { state.zoom -= 25; render(); }
+    },
+    resetZoom: function () {
+      state.zoom = 100; render();
+    },
+    toggleSidebar: function () {
+      state.showSidebar = !state.showSidebar; render();
+    }
+  };
+
+  /* ── INIT ─────────────────────────────────────────── */
+  render();
+
+})();
+</script>
+</body>
+</html>

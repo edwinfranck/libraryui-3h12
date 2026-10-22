@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity History - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f9fafb;min-height:100vh}
+
+    .activity-history{max-width:900px;margin:0 auto;padding:2rem}
+    .activity-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+    .activity-header h2{font-size:1.5rem;font-weight:700;color:#111827;margin:0}
+    .activity-count{font-size:.875rem;color:#6b7280}
+
+    /* FILTERS */
+    .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem}
+    .filter-btn{padding:.5rem 1rem;border:2px solid #e5e7eb;background:#fff;border-radius:9999px;font-size:.8rem;font-weight:500;color:#6b7280;cursor:pointer;transition:all .2s ease}
+    .filter-btn:hover{border-color:#4f46e5;color:#4f46e5}
+    .filter-btn.active{background:#4f46e5;border-color:#4f46e5;color:#fff}
+
+    /* DATE GROUP */
+    .date-group{margin-bottom:2rem}
+    .date-label{font-size:.8rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;padding:.5rem 0;margin-bottom:1rem;border-bottom:1px solid #e5e7eb}
+
+    /* TIMELINE */
+    .timeline{position:relative;padding-left:2rem}
+    .timeline::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:#e5e7eb}
+    .timeline-item{position:relative;padding-bottom:1.5rem}
+    .timeline-item:last-child{padding-bottom:0}
+    .timeline-marker{position:absolute;left:-2rem;top:4px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+    .timeline-marker.marker--success{background:#10b981}
+    .timeline-marker.marker--danger{background:#ef4444}
+    .timeline-marker.marker--warning{background:#f59e0b}
+    .timeline-marker.marker--info{background:#3b82f6}
+    .timeline-marker.marker--primary{background:#4f46e5}
+    .timeline-marker.marker--neutral{background:#6b7280}
+
+    /* ACTIVITY CARD */
+    .activity-card{background:#fff;border-radius:.75rem;padding:1rem 1.25rem;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:all .3s ease;cursor:default;margin-left:.5rem}
+    .activity-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateX(4px)}
+    .activity-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem}
+    .activity-title{font-size:.95rem;font-weight:600;color:#111827;margin:0}
+    .activity-time{font-size:.75rem;color:#9ca3af;white-space:nowrap}
+    .activity-description{font-size:.85rem;color:#6b7280;line-height:1.5;margin:0 0 .5rem}
+    .activity-meta{display:flex;flex-wrap:wrap;gap:.75rem}
+    .meta-item{display:flex;align-items:center;gap:.375rem;font-size:.75rem;color:#9ca3af}
+    .meta-item i{font-size:.75rem}
+
+    /* TYPE BADGES */
+    .activity-type{display:inline-flex;align-items:center;gap:.25rem;padding:.125rem .5rem;border-radius:9999px;font-size:.7rem;font-weight:600;margin-bottom:.5rem}
+    .type--login{background:#dcfce7;color:#166534}
+    .type--logout{background:#fee2e2;color:#991b1b}
+    .type--update{background:#fef3c7;color:#92400e}
+    .type--create{background:#dbeafe;color:#1e40af}
+    .type--delete{background:#fce7f3;color:#9d174d}
+    .type--comment{background:#f3e8ff;color:#6b21a8}
+    .type--share{background:#e0e7ff;color:#3730a3}
+    .type--download{background:#cffafe;color:#155e75}
+    .type--upload{background:#d1fae5;color:#065f46}
+    .type--payment{background:#fef9c3;color:#854d0e}
+
+    /* PAGINATION */
+    .load-more{display:flex;justify-content:center;margin-top:2rem}
+    .load-more button{padding:.75rem 2rem;background:#fff;border:2px solid #e5e7eb;border-radius:.5rem;font-size:.875rem;font-weight:600;color:#374151;cursor:pointer;transition:all .2s ease}
+    .load-more button:hover{border-color:#4f46e5;color:#4f46e5}
+
+    /* EMPTY STATE */
+    .empty-state{text-align:center;padding:3rem;background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+    .empty-state i{font-size:3rem;color:#d1d5db;margin-bottom:1rem}
+    .empty-state p{color:#6b7280;font-size:.9rem}
+
+    @media(max-width:768px){
+      .activity-history{padding:1rem}
+      .activity-header{flex-direction:column;align-items:flex-start}
+      .filter-bar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:.5rem}
+      .filter-btn{white-space:nowrap}
+      .activity-meta{flex-direction:column;gap:.375rem}
+    }
+  </style>
+</head>
+<body>
+<div class="activity-history">
+  <div class="activity-header">
+    <div><h2>Historique d'activité</h2><span class="activity-count" id="activityCount">10 activités</span></div>
+  </div>
+  <div class="filter-bar" id="filterBar"></div>
+  <div id="activityContainer"></div>
+  <div class="load-more" id="loadMore"><button onclick="alert('Chargement de plus d\'activités...')">Charger plus</button></div>
+</div>
+
+<script>
+const activities = [
+  { id:1, type:'login', title:'Connexion réussie', description:'Connexion depuis un nouvel appareil détecté.', time:'2024-01-15 09:23', ip:'192.168.1.42', device:'MacBook Pro', location:'Paris, France' },
+  { id:2, type:'update', title:'Profil mis à jour', description:'Les informations du profil ont été modifiées.', time:'2024-01-15 11:45', ip:'192.168.1.42', device:'MacBook Pro', location:'Paris, France' },
+  { id:3, type:'create', title:'Nouveau projet créé', description:'Le projet "Dashboard Analytics" a été créé.', time:'2024-01-15 14:30', ip:'192.168.1.42', device:'MacBook Pro', location:'Paris, France' },
+  { id:4, type:'comment', title:'Commentaire ajouté', description:'Commentaire sur la tâche "Refonte page d\'accueil".', time:'2024-01-14 16:12', ip:'192.168.1.42', device:'MacBook Pro', location:'Paris, France' },
+  { id:5, type:'share', title:'Document partagé', description:'Le fichier "Rapport Q4" a été partagé avec l\'équipe.', time:'2024-01-14 10:00', ip:'10.0.0.5', device:'iPhone 15', location:'Lyon, France' },
+  { id:6, type:'download', title:'Fichier téléchargé', description:'Téléchargement du fichier "specs_v2.pdf".', time:'2024-01-13 17:30', file:'specs_v2.pdf', device:'MacBook Pro', location:'Paris, France' },
+  { id:7, type:'payment', title:'Paiement effectué', description:'Abonnement Premium renouvelé.', time:'2024-01-13 09:15', amount:'29,99 €', device:'MacBook Pro', location:'Paris, France' },
+  { id:8, type:'upload', title:'Fichier uploadé', description:'Upload du fichier "maquettes_final.fig".', time:'2024-01-12 14:45', file:'maquettes_final.fig', device:'MacBook Pro', location:'Paris, France' },
+  { id:9, type:'delete', title:'Élément supprimé', description:'La tâche "Bug #234" a été supprimée.', time:'2024-01-12 11:20', ip:'192.168.1.42', device:'MacBook Pro', location:'Paris, France' },
+  { id:10,type:'logout', title:'Déconnexion', description:'Session terminée manuellement.', time:'2024-01-12 08:00', ip:'10.0.0.5', device:'iPhone 15', location:'Lyon, France' }
+];
+
+const filterTypes = [
+  { key:'all', label:'Toutes' },
+  { key:'login', label:'Connexions' },
+  { key:'update', label:'Modifications' },
+  { key:'create', label:'Créations' },
+  { key:'delete', label:'Suppressions' },
+  { key:'payment', label:'Paiements' }
+];
+
+const typeConfig = {
+  login:    { icon:'bi-box-arrow-in-right', marker:'marker--success', label:'Connexion' },
+  logout:   { icon:'bi-box-arrow-right', marker:'marker--danger', label:'Déconnexion' },
+  update:   { icon:'bi-pencil', marker:'marker--warning', label:'Modification' },
+  create:   { icon:'bi-plus-circle', marker:'marker--info', label:'Création' },
+  delete:   { icon:'bi-trash', marker:'marker--danger', label:'Suppression' },
+  comment:  { icon:'bi-chat-dots', marker:'marker--primary', label:'Commentaire' },
+  share:    { icon:'bi-share', marker:'marker--primary', label:'Partage' },
+  download: { icon:'bi-download', marker:'marker--info', label:'Téléchargement' },
+  upload:   { icon:'bi-upload', marker:'marker--success', label:'Upload' },
+  payment:  { icon:'bi-credit-card', marker:'marker--warning', label:'Paiement' }
+};
+
+let activeFilter = 'all';
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+  if (d.toDateString() === today.toDateString()) return "Aujourd'hui";
+  if (d.toDateString() === yesterday.toDateString()) return 'Hier';
+  return d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function formatTime(dateStr) {
+  return new Date(dateStr).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+}
+
+function renderFilters() {
+  const bar = document.getElementById('filterBar');
+  bar.innerHTML = filterTypes.map(f =>
+    `<button class="filter-btn${f.key === activeFilter ? ' active' : ''}" data-filter="${f.key}">${f.label}</button>`
+  ).join('');
+  bar.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.dataset.filter;
+      renderFilters();
+      renderActivities();
+    });
+  });
+}
+
+function renderActivities() {
+  const container = document.getElementById('activityContainer');
+  const filtered = activeFilter === 'all' ? activities : activities.filter(a => a.type === activeFilter);
+  document.getElementById('activityCount').textContent = `${filtered.length} activité${filtered.length>1?'s':''}`;
+
+  if (!filtered.length) {
+    container.innerHTML = '<div class="empty-state"><i class="bi bi-clock-history"></i><p>Aucune activité trouvée pour ce filtre.</p></div>';
+    document.getElementById('loadMore').style.display = 'none';
+    return;
+  }
+  document.getElementById('loadMore').style.display = 'flex';
+
+  const grouped = {};
+  filtered.forEach(a => {
+    const dateKey = a.time.split(' ')[0];
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(a);
+  });
+
+  let html = '';
+  for (const [date, items] of Object.entries(grouped)) {
+    html += `<div class="date-group"><div class="date-label">${formatDate(date)}</div><div class="timeline">`;
+    items.forEach(a => {
+      const cfg = typeConfig[a.type] || typeConfig['login'];
+      html += `
+        <div class="timeline-item">
+          <div class="timeline-marker ${cfg.marker}"><i class="bi ${cfg.icon}"></i></div>
+          <div class="activity-card">
+            <span class="activity-type type--${a.type}">${cfg.label}</span>
+            <div class="activity-card-header"><h4 class="activity-title">${a.title}</h4><span class="activity-time">${formatTime(a.time)}</span></div>
+            <p class="activity-description">${a.description}</p>
+            <div class="activity-meta">
+              ${a.ip ? `<span class="meta-item"><i class="bi bi-globe"></i>${a.ip}</span>` : ''}
+              ${a.device ? `<span class="meta-item"><i class="bi bi-laptop"></i>${a.device}</span>` : ''}
+              ${a.location ? `<span class="meta-item"><i class="bi bi-geo-alt"></i>${a.location}</span>` : ''}
+              ${a.file ? `<span class="meta-item"><i class="bi bi-file-earmark"></i>${a.file}</span>` : ''}
+              ${a.amount ? `<span class="meta-item"><i class="bi bi-currency-euro"></i>${a.amount}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    });
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+renderFilters();
+renderActivities();
+</script>
+</body>
+</html>

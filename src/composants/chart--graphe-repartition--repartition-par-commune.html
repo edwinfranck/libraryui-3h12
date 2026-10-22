@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Répartition des échecs par commune</title>
+<style>
+  :root {
+    --bg: #f4f5fa;
+    --card: #ffffff;
+    --border: #eef0f5;
+    --navy: #1c2542;
+    --label-bg: #eef0f5;
+    --label-text: #4b5468;
+    --track-bg: #e7e9f0;
+    --accent-blue: #2f9bd8;
+    --scrollbar-thumb: #c7ccda;
+    --scrollbar-thumb-hover: #aeb4c4;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--navy);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .page {
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .failure-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+  }
+
+  .failure-card__title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0 0 20px;
+  }
+
+  .failure-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 10px 0 0;
+    max-height: 460px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  .failure-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .failure-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .failure-list::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+  }
+
+  .failure-list::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  .failure-row {
+    margin-bottom: 22px;
+    border-radius: 10px;
+    transition: background-color 0.15s ease;
+  }
+
+  .failure-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .failure-row:hover {
+    background: rgba(47, 155, 216, 0.04);
+  }
+
+  .failure-row__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .failure-row__label {
+    background: var(--label-bg);
+    color: var(--label-text);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+  }
+
+  .failure-row__value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  .failure-row__track {
+    height: 15px;
+    background: var(--track-bg);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .failure-row__fill {
+    height: 100%;
+    background: var(--accent-blue);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+
+  @media (max-width: 575.98px) {
+    body {
+      padding: 20px 16px;
+    }
+
+    .failure-card {
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .failure-list {
+      max-height: 360px;
+    }
+
+    .failure-card__title {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <section class="failure-card" aria-labelledby="failureChartTitle">
+    <h2 id="failureChartTitle" class="failure-card__title">Répartition par commune</h2>
+    <ul class="failure-list" id="failureList" role="list"></ul>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var MAX_SCALE = 550;
+
+  var DATA = [
+    { commune: 'Cocody', count: 245 },
+    { commune: 'Yopougon', count: 198 },
+    { commune: 'Abobo', count: 176 },
+    { commune: 'Adjamé', count: 166 },
+    { commune: 'Treichville', count: 152 },
+    { commune: 'Plateau', count: 140 },
+    { commune: 'Koumassi', count: 130 },
+    { commune: 'Anyama', count: 125 },
+    { commune: 'Marcory', count: 118 },
+    { commune: 'Port-Bouët', count: 104 },
+    { commune: 'Attécoubé', count: 92 },
+    { commune: 'Bingerville', count: 81 },
+    { commune: 'Songon', count: 67 }
+  ];
+
+  function renderList(data, maxScale) {
+    var list = document.getElementById('failureList');
+    list.innerHTML = '';
+
+    data.forEach(function (row) {
+      var percentage = Math.min(100, Math.round((row.count / maxScale) * 1000) / 10);
+
+      var li = document.createElement('li');
+      li.className = 'failure-row';
+      li.setAttribute('role', 'listitem');
+      li.innerHTML =
+        '<div class="failure-row__head">' +
+          '<span class="failure-row__label">' + row.commune + '</span>' +
+          '<span class="failure-row__value">' + row.count + '</span>' +
+        '</div>' +
+        '<div class="failure-row__track" role="progressbar" aria-label="' + row.commune + ' : ' + row.count + ' échecs" ' +
+             'aria-valuenow="' + row.count + '" aria-valuemin="0" aria-valuemax="' + maxScale + '">' +
+          '<div class="failure-row__fill" style="width:' + percentage + '%"></div>' +
+        '</div>';
+      list.appendChild(li);
+    });
+  }
+
+  renderList(DATA, MAX_SCALE);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:#f9fafb;color:#374151}
+
+    .demo-page{max-width:1200px;margin:0 auto;padding:2rem}
+    .demo-title{text-align:center;margin-bottom:3rem}
+    .demo-title h1{font-size:2rem;font-weight:800;color:#111827;margin:0 0 .5rem}
+    .demo-title p{color:#6b7280;font-size:1rem}
+    .variant-label{font-size:.85rem;font-weight:600;color:#4f46e5;text-transform:uppercase;letter-spacing:.05em;margin:2.5rem 0 1rem;padding-left:.5rem;border-left:3px solid #4f46e5}
+
+    /* ══════ SECTION VARIANTS ══════ */
+
+    /* ── FEATURES SECTION ── */
+    .section{padding:4rem 2rem;border-radius:1rem;margin-bottom:2rem;overflow:hidden}
+    .section--white{background:#fff;border:1px solid #e5e7eb}
+    .section--light{background:#f8fafc}
+    .section--dark{background:#111827;color:#e5e7eb}
+    .section--gradient{background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#fff}
+
+    .section-header{text-align:center;max-width:700px;margin:0 auto 3rem}
+    .section-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.375rem .875rem;background:rgba(79,70,229,.1);color:#4f46e5;border-radius:9999px;font-size:.8rem;font-weight:600;margin-bottom:1rem}
+    .section--gradient .section-badge,.section--dark .section-badge{background:rgba(255,255,255,.15);color:#fff}
+    .section-header h2{font-size:2rem;font-weight:800;color:#111827;margin:0 0 .75rem}
+    .section--dark .section-header h2,.section--gradient .section-header h2{color:#fff}
+    .section-header p{font-size:1.05rem;color:#6b7280;line-height:1.7;margin:0}
+    .section--dark .section-header p{color:#9ca3af}
+    .section--gradient .section-header p{color:rgba(255,255,255,.85)}
+
+    /* ── FEATURES GRID ── */
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+    .feature-card{padding:1.75rem;background:#fff;border:1px solid #e5e7eb;border-radius:1rem;transition:all .3s}
+    .feature-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.08);border-color:#d1d5db}
+    .section--dark .feature-card{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1)}
+    .section--dark .feature-card:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15)}
+    .section--gradient .feature-card{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15)}
+    .section--gradient .feature-card:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2)}
+    .feature-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#eff6ff,#e0e7ff);border-radius:.75rem;margin-bottom:1.25rem;font-size:1.25rem;color:#4f46e5}
+    .section--dark .feature-icon,.section--gradient .feature-icon{background:rgba(255,255,255,.1);color:#fff}
+    .feature-card h3{font-size:1rem;font-weight:700;color:#111827;margin:0 0 .5rem}
+    .section--dark .feature-card h3,.section--gradient .feature-card h3{color:#fff}
+    .feature-card p{font-size:.875rem;color:#6b7280;line-height:1.6;margin:0}
+    .section--dark .feature-card p{color:#9ca3af}
+    .section--gradient .feature-card p{color:rgba(255,255,255,.8)}
+
+    /* ── CTA SECTION ── */
+    .cta-content{text-align:center;max-width:600px;margin:0 auto}
+    .cta-content h2{font-size:2rem;font-weight:800;margin:0 0 1rem;color:#fff}
+    .cta-content p{font-size:1.05rem;margin:0 0 2rem;color:rgba(255,255,255,.85);line-height:1.7}
+    .cta-actions{display:flex;gap:1rem;justify-content:center}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.875rem 1.75rem;font-size:.95rem;font-weight:600;border-radius:.75rem;border:none;cursor:pointer;transition:all .3s;text-decoration:none}
+    .btn--white{background:#fff;color:#4f46e5;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+    .btn--white:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+    .btn--ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.3)}
+    .btn--ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5)}
+
+    /* ── STATS SECTION ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;text-align:center}
+    .stat-card{padding:1.5rem}
+    .stat-card .stat-value{font-size:2.5rem;font-weight:800;color:#4f46e5;margin:0 0 .25rem;line-height:1}
+    .section--dark .stat-card .stat-value{color:#818cf8}
+    .stat-card .stat-label{font-size:.875rem;color:#6b7280;margin:0}
+    .section--dark .stat-card .stat-label{color:#9ca3af}
+    .stat-divider{width:40px;height:3px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:3px;margin:.75rem auto 0}
+
+    /* ── TESTIMONIAL SECTION ── */
+    .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+    .testimonial-card{padding:1.75rem;background:#fff;border:1px solid #e5e7eb;border-radius:1rem}
+    .testimonial-stars{display:flex;gap:.125rem;margin-bottom:1rem;color:#f59e0b;font-size:1rem}
+    .testimonial-text{font-size:.9rem;color:#374151;line-height:1.7;margin:0 0 1.25rem;font-style:italic}
+    .testimonial-author{display:flex;align-items:center;gap:.75rem}
+    .testimonial-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:.75rem;font-weight:700}
+    .testimonial-info .name{font-size:.875rem;font-weight:600;color:#111827;margin:0}
+    .testimonial-info .role{font-size:.75rem;color:#6b7280;margin:0}
+
+    @media(max-width:768px){
+      .features-grid,.testimonials-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .cta-actions{flex-direction:column;align-items:center}
+    }
+  </style>
+</head>
+<body>
+<div class="demo-page">
+
+  <!-- Stats Section -->
+  <div class="section section--white">
+    <div class="section-header">
+      <span class="section-badge"><i class="bi bi-bar-chart"></i> En chiffres</span>
+      <h2>Nos résultats parlent d'eux-mêmes</h2>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">10K+</div><div class="stat-label">Utilisateurs actifs</div><div class="stat-divider"></div></div>
+      <div class="stat-card"><div class="stat-value">99.9%</div><div class="stat-label">Disponibilité</div><div class="stat-divider"></div></div>
+      <div class="stat-card"><div class="stat-value">150+</div><div class="stat-label">Pays couverts</div><div class="stat-divider"></div></div>
+      <div class="stat-card"><div class="stat-value">4.9/5</div><div class="stat-label">Satisfaction client</div><div class="stat-divider"></div></div>
+    </div>
+  </div>
+
+
+</div>
+</body>
+</html>

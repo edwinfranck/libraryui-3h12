@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+
+    .auth-container{display:grid;grid-template-columns:1fr 1fr;max-width:1000px;width:100%;background:#fff;border-radius:1.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);overflow:hidden}
+
+    /* BRANDING */
+    .auth-branding{background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:3rem;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+    .auth-branding__content{position:relative;z-index:1}
+    .auth-branding__logo{width:64px;height:64px;background:rgba(255,255,255,.2);border-radius:1rem;display:flex;align-items:center;justify-content:center;margin-bottom:2rem}
+    .auth-branding__logo i{font-size:2rem;color:#fff}
+    .auth-branding__title{font-size:2.5rem;font-weight:700;color:#fff;margin:0 0 1rem}
+    .auth-branding__subtitle{font-size:1rem;color:rgba(255,255,255,.8);line-height:1.6;margin:0 0 2rem}
+    .auth-branding__features{display:flex;flex-direction:column;gap:.75rem}
+    .feature{display:flex;align-items:center;gap:.75rem;color:rgba(255,255,255,.9);font-size:.9rem}
+    .feature i{color:#a5f3fc}
+    .auth-branding__decoration{position:absolute;inset:0;pointer-events:none}
+    .circle{position:absolute;border-radius:50%;background:rgba(255,255,255,.1)}
+    .circle--1{width:300px;height:300px;top:-100px;right:-100px}
+    .circle--2{width:200px;height:200px;bottom:-50px;left:-50px}
+    .circle--3{width:100px;height:100px;bottom:30%;right:20%}
+
+    /* FORM SIDE */
+    .auth-form-wrapper{padding:3rem;display:flex;flex-direction:column;justify-content:center}
+    .auth-form{max-width:400px;width:100%;margin:0 auto}
+    .auth-form__header{text-align:center;margin-bottom:2rem}
+    .auth-form__title{font-size:1.75rem;font-weight:700;color:#111827;margin:0 0 .5rem}
+    .auth-form__subtitle{font-size:.9rem;color:#6b7280;margin:0}
+    .auth-form__footer{text-align:center;font-size:.875rem;color:#6b7280;margin:1.5rem 0 0}
+    .auth-form__footer a{color:#4f46e5;text-decoration:none;font-weight:600}
+    .auth-form__footer a:hover{text-decoration:underline}
+
+    /* ALERT */
+    .alert{display:none;align-items:center;gap:.75rem;padding:.875rem 1rem;border-radius:.5rem;margin-bottom:1.5rem;font-size:.875rem}
+    .alert.show{display:flex}
+    .alert--error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+    .alert__close{margin-left:auto;background:none;border:none;color:inherit;cursor:pointer;padding:.25rem;display:flex;opacity:.7}
+    .alert__close:hover{opacity:1}
+
+    /* FORM */
+    .form{display:flex;flex-direction:column;gap:1.25rem}
+    .form-group{display:flex;flex-direction:column;gap:.5rem}
+    .form-group--inline{flex-direction:row;align-items:center}
+    .form-label{display:flex;justify-content:space-between;align-items:center;font-size:.875rem;font-weight:500;color:#374151}
+    .form-label__link{font-size:.8rem;font-weight:500;color:#4f46e5;text-decoration:none}
+    .form-label__link:hover{text-decoration:underline}
+    .input-wrapper{position:relative;display:flex;align-items:center}
+    .input-icon{position:absolute;left:1rem;color:#9ca3af;font-size:1rem;pointer-events:none}
+    .form-input{width:100%;padding:.75rem 1rem;font-size:.9rem;border:1px solid #e5e7eb;border-radius:.5rem;background:#fff;transition:all .2s;font-family:inherit}
+    .form-input:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+    .form-input::placeholder{color:#9ca3af}
+    .form-input--icon{padding-left:2.75rem}
+    .form-input--password{padding-right:3rem}
+    .password-toggle{position:absolute;right:.75rem;background:none;border:none;color:#6b7280;cursor:pointer;padding:.25rem;display:flex}
+    .password-toggle:hover{color:#4f46e5}
+
+    /* CHECKBOX */
+    .checkbox{display:flex;align-items:center;gap:.625rem;cursor:pointer}
+    .checkbox input{position:absolute;opacity:0;width:0;height:0}
+    .checkbox__mark{width:18px;height:18px;border:2px solid #d1d5db;border-radius:.25rem;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+    .checkbox__mark::after{content:'';width:10px;height:6px;border:2px solid #fff;border-top:none;border-right:none;transform:rotate(-45deg) scale(0);transition:transform .15s;margin-top:-2px}
+    .checkbox input:checked + .checkbox__mark{background:#4f46e5;border-color:#4f46e5}
+    .checkbox input:checked + .checkbox__mark::after{transform:rotate(-45deg) scale(1)}
+    .checkbox__label{font-size:.875rem;color:#374151}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;font-weight:600;border:none;border-radius:.5rem;cursor:pointer;transition:all .2s}
+    .btn--primary{background:#4f46e5;color:#fff}
+    .btn--primary:hover:not(:disabled){background:#4338ca}
+    .btn--full{width:100%}
+    .btn:disabled{opacity:.7;cursor:not-allowed}
+    .btn--social{background:#fff;border:1px solid #e5e7eb;color:#374151;flex:1}
+    .btn--social:hover{background:#f9fafb;border-color:#d1d5db}
+    .btn--google:hover{border-color:#4285f4}
+    .btn--github:hover{border-color:#333}
+
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* DIVIDER */
+    .divider{display:flex;align-items:center;gap:1rem;margin:1.5rem 0}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e5e7eb}
+    .divider span{font-size:.8rem;color:#9ca3af;white-space:nowrap}
+    .social-buttons{display:flex;gap:.75rem}
+
+    @media(max-width:768px){
+      .auth-container{grid-template-columns:1fr}
+      .auth-branding{display:none}
+    }
+  </style>
+</head>
+<body>
+<div class="auth-container">
+  <!-- Left Side - Branding -->
+  <div class="auth-branding">
+    <div class="auth-branding__content">
+      <div class="auth-branding__logo"></div>
+      <h1 class="auth-branding__title">Bienvenue</h1>
+      <p class="auth-branding__subtitle">Connectez-vous pour accéder à votre espace personnel et gérer vos projets en toute sécurité.</p>
+      <div class="auth-branding__features">
+        <div class="feature"><i class="bi bi-check-circle-fill"></i><span>Tableau de bord personnalisé</span></div>
+        <div class="feature"><i class="bi bi-check-circle-fill"></i><span>Données sécurisées</span></div>
+        <div class="feature"><i class="bi bi-check-circle-fill"></i><span>Support 24/7</span></div>
+      </div>
+    </div>
+    <div class="auth-branding__decoration"><div class="circle circle--1"></div><div class="circle circle--2"></div><div class="circle circle--3"></div></div>
+  </div>
+
+  <!-- Right Side - Form -->
+  <div class="auth-form-wrapper">
+    <div class="auth-form">
+      <div class="auth-form__header">
+        <h2 class="auth-form__title">Connexion</h2>
+        <p class="auth-form__subtitle">Entrez vos identifiants pour continuer</p>
+      </div>
+
+      <div class="alert alert--error" id="alertError">
+        <i class="bi bi-exclamation-circle"></i>
+        <span id="alertText"></span>
+        <button class="alert__close" onclick="hideAlert()"><i class="bi bi-x"></i></button>
+      </div>
+
+      <form class="form" id="loginForm" onsubmit="return login(event)">
+        <div class="form-group">
+          <label class="form-label"><span>Adresse email</span></label>
+          <div class="input-wrapper">
+            <i class="bi bi-envelope input-icon"></i>
+            <input type="email" class="form-input form-input--icon" placeholder="nom@exemple.com" id="email" autocomplete="email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><span>Mot de passe</span><a href="#" class="form-label__link">Mot de passe oublié ?</a></label>
+          <div class="input-wrapper">
+            <i class="bi bi-lock input-icon"></i>
+            <input type="password" class="form-input form-input--icon form-input--password" placeholder="••••••••" id="password" autocomplete="current-password">
+            <button type="button" class="password-toggle" onclick="togglePassword()"><i class="bi bi-eye" id="pwdIcon"></i></button>
+          </div>
+        </div>
+        <div class="form-group form-group--inline">
+          <label class="checkbox"><input type="checkbox" id="rememberMe"><span class="checkbox__mark"></span><span class="checkbox__label">Se souvenir de moi</span></label>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full" id="submitBtn">
+          <span class="spinner" id="spinner"></span>
+          <span id="btnText">Se connecter</span>
+          <i class="bi bi-arrow-right" id="btnArrow"></i>
+        </button>
+      </form>
+
+      <div class="divider"><span>ou continuer avec</span></div>
+      <div class="social-buttons">
+        <button class="btn btn--social btn--google" onclick="console.log('Login with Google')">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span>Google</span>
+        </button>
+        <button class="btn btn--social btn--github" onclick="console.log('Login with GitHub')"><i class="bi bi-github"></i><span>GitHub</span></button>
+      </div>
+      <p class="auth-form__footer">Pas encore de compte ? <a href="#">Créer un compte</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+let showPassword = false;
+
+function togglePassword() {
+  showPassword = !showPassword;
+  const input = document.getElementById('password');
+  const icon = document.getElementById('pwdIcon');
+  input.type = showPassword ? 'text' : 'password';
+  icon.className = showPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+
+function showAlert(msg) {
+  document.getElementById('alertText').textContent = msg;
+  document.getElementById('alertError').classList.add('show');
+}
+
+function hideAlert() {
+  document.getElementById('alertError').classList.remove('show');
+}
+
+async function login(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    showAlert('Veuillez remplir tous les champs');
+    return false;
+  }
+
+  hideAlert();
+  const btn = document.getElementById('submitBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const btnArrow = document.getElementById('btnArrow');
+
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  btnText.textContent = 'Connexion en cours...';
+  btnArrow.style.display = 'none';
+
+  await new Promise(r => setTimeout(r, 1500));
+
+  btn.disabled = false;
+  spinner.style.display = 'none';
+  btnText.textContent = 'Se connecter';
+  btnArrow.style.display = '';
+  console.log('Login:', { email, rememberMe: document.getElementById('rememberMe').checked });
+  return false;
+}
+</script>
+</body>
+</html>

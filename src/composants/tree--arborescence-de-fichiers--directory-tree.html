@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tree View Anime</title>
+<style>
+  :root {
+    --page-bg: #eef1f5;
+    --tree-bg: #ffffff;
+    --line-color: #d8dbe0;
+    --line-color-highlight: #f0a93c;
+    --folder-color: #6b7280;
+    --root-color: #14161b;
+    --highlight-color: #f0a93c;
+    --caption-color: #9aa0ab;
+    --focus-ring: #6366f1;
+    --hover-bg: #f4f5f7;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--page-bg);
+    min-height: 100vh;
+    padding: 32px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  button { font-family: inherit; }
+
+  .tree-view-anime {
+    position: relative;
+    max-width: 460px;
+    width: 100%;
+    background: var(--tree-bg);
+    padding: 28px 24px 20px;
+  }
+
+  .tree-view-anime__list { list-style: none; margin: 0; padding: 0; }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) { padding-left: 20px; }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item {
+    position: relative;
+    padding-left: 20px;
+  }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item::before,
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    border-color: var(--line-color);
+  }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item::before {
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed var(--line-color);
+  }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item::after {
+    top: 15px;
+    width: 16px;
+    border-top: 1px dashed var(--line-color);
+  }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item:last-child::before {
+    bottom: auto;
+    height: 15px;
+  }
+
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item--highlight::before,
+  .tree-view-anime__list:not(.tree-view-anime__list--root) > .tree-view-anime__item--highlight::after {
+    border-color: var(--line-color-highlight);
+  }
+
+  .tree-view-anime__node {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 6px 6px 2px;
+    margin: 1px 0;
+    color: var(--folder-color);
+    border-radius: 6px;
+  }
+
+  button.tree-view-anime__node {
+    appearance: none;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  button.tree-view-anime__node:hover { background: var(--hover-bg); }
+  button.tree-view-anime__node:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+  .tree-view-anime__list--emphasis > .tree-view-anime__item > .tree-view-anime__node {
+    color: var(--root-color);
+    font-weight: 600;
+  }
+
+  .tree-view-anime__item--highlight > .tree-view-anime__node { color: var(--highlight-color); }
+
+  .tree-view-anime__chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .tree-view-anime__chevron svg {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+    transform: rotate(90deg);
+  }
+
+  .tree-view-anime__node--collapsed .tree-view-anime__chevron svg { transform: rotate(0deg); }
+
+  .tree-view-anime__chevron--spacer { visibility: hidden; }
+
+  .tree-view-anime__icon { display: inline-flex; flex-shrink: 0; }
+  .tree-view-anime__icon svg { width: 16px; height: 16px; display: block; }
+
+  .tree-view-anime__label { font-size: 13.5px; line-height: 1.3; white-space: nowrap; }
+
+  .tree-view-anime__list--emphasis > .tree-view-anime__item > .tree-view-anime__node .tree-view-anime__label { font-size: 14px; }
+
+  .tree-view-anime__children {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.22s ease;
+  }
+
+  .tree-view-anime__children--collapsed { grid-template-rows: 0fr; }
+
+  .tree-view-anime__children-inner { overflow: hidden; min-height: 0; }
+
+  .tree-view-anime__caption {
+    margin: 14px 0 0;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--caption-color);
+  }
+
+  @media (max-width: 480px) {
+    .tree-view-anime { padding: 20px 16px 16px; overflow-x: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tree-view-anime__children, .tree-view-anime__chevron svg { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="tree-view-anime" aria-label="File system structure diagram (foldable)">
+  <div id="treeRoot"></div>
+</div>
+
+<script>
+  var TREE_DATA = [
+    {
+      label: 'Client Name',
+      type: 'folder',
+      children: [
+        {
+          label: 'Project Name',
+          type: 'folder',
+          children: [
+            {
+              label: '_module-name',
+              type: 'folder',
+              children: [
+                {
+                  label: '_view-name',
+                  type: 'folder',
+                  children: [
+                    { label: '_view-name_v00.ext', type: 'image', highlight: true },
+                    { label: '_view-name_v01.ext', type: 'image', highlight: true },
+                    {
+                      label: 'Output',
+                      type: 'folder',
+                      children: [
+                        { label: 'Components', type: 'folder' },
+                        { label: 'Mockup', type: 'folder' }
+                      ]
+                    }
+                  ]
+                },
+                { label: 'Presentation', type: 'folder' }
+              ]
+            },
+            { label: 'Commons', type: 'folder' },
+            { label: 'Styleguide', type: 'folder' }
+          ]
+        },
+        {
+          label: 'Commons',
+          type: 'folder',
+          children: [
+            { label: 'Resources', type: 'folder' },
+            { label: 'Styleguide', type: 'folder' },
+            { label: 'Branding', type: 'folder' }
+          ]
+        }
+      ]
+    }
+  ];
+
+  var FOLDER_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h4.379a1.5 1.5 0 0 1 1.06.44l1.122 1.12a1.5 1.5 0 0 0 1.06.44H19.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>';
+  var IMAGE_ICON = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg>';
+  var CHEVRON_ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>';
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function renderList(nodes, depth) {
+    var classes = 'tree-view-anime__list' + (depth === 0 ? ' tree-view-anime__list--root' : '') + (depth < 2 ? ' tree-view-anime__list--emphasis' : '');
+    var html = '<ul class="' + classes + '">';
+
+    nodes.forEach(function (node) {
+      var itemClass = 'tree-view-anime__item' + (node.highlight ? ' tree-view-anime__item--highlight' : '');
+      var icon = node.type === 'image' ? IMAGE_ICON : FOLDER_ICON;
+      var hasChildren = node.children && node.children.length;
+
+      html += '<li class="' + itemClass + '">';
+
+      if (hasChildren) {
+        html += '<button type="button" class="tree-view-anime__node tree-view-anime__node--toggle" aria-expanded="true">' +
+          '<span class="tree-view-anime__chevron" aria-hidden="true">' + CHEVRON_ICON + '</span>' +
+          '<span class="tree-view-anime__icon" aria-hidden="true">' + icon + '</span>' +
+          '<span class="tree-view-anime__label">' + escapeHtml(node.label) + '</span>' +
+          '</button>' +
+          '<div class="tree-view-anime__children">' +
+          '<div class="tree-view-anime__children-inner">' + renderList(node.children, depth + 1) + '</div>' +
+          '</div>';
+      } else {
+        html += '<div class="tree-view-anime__node">' +
+          '<span class="tree-view-anime__chevron tree-view-anime__chevron--spacer" aria-hidden="true"></span>' +
+          '<span class="tree-view-anime__icon" aria-hidden="true">' + icon + '</span>' +
+          '<span class="tree-view-anime__label">' + escapeHtml(node.label) + '</span>' +
+          '</div>';
+      }
+
+      html += '</li>';
+    });
+
+    html += '</ul>';
+    return html;
+  }
+
+  document.getElementById('treeRoot').innerHTML = renderList(TREE_DATA, 0);
+
+  document.getElementById('treeRoot').addEventListener('click', function (event) {
+    var button = event.target.closest('.tree-view-anime__node--toggle');
+    if (!button) {
+      return;
+    }
+
+    var item = button.closest('.tree-view-anime__item');
+    var childrenWrap = item.querySelector('.tree-view-anime__children');
+    if (!childrenWrap) {
+      return;
+    }
+
+    var collapsed = childrenWrap.classList.toggle('tree-view-anime__children--collapsed');
+    button.classList.toggle('tree-view-anime__node--collapsed', collapsed);
+    button.setAttribute('aria-expanded', String(!collapsed));
+  });
+</script>
+</body>
+</html>

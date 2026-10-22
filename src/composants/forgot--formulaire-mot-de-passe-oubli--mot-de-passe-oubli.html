@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forgot Password - Premium UI Library</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;background:whitesmoke;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+
+    .auth-card{width:100%;max-width:420px;background:#fff;border-radius:1.5rem;padding:2.5rem;box-shadow:0 25px 50px -12px rgba(0,0,0,.25);text-align:center}
+    .auth-card__title{font-size:1.5rem;font-weight:700;color:#111827;margin:0 0 .75rem}
+    .auth-card__subtitle{font-size:.9rem;color:#6b7280;line-height:1.6;margin:0 0 1.5rem}
+
+    .alert{display:none;align-items:center;gap:.75rem;padding:.875rem 1rem;border-radius:.5rem;margin-bottom:1.25rem;font-size:.875rem;text-align:left}
+    .alert.show{display:flex}
+    .alert--error{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+
+    .form{display:flex;flex-direction:column;gap:1.25rem;text-align:left}
+    .form-group{display:flex;flex-direction:column;gap:.5rem}
+    .form-label{font-size:.875rem;font-weight:500;color:#374151}
+    .input-wrapper{position:relative;display:flex;align-items:center}
+    .input-icon{position:absolute;left:1rem;color:#9ca3af;font-size:1rem;pointer-events:none}
+    .form-input{width:100%;padding:.75rem 1rem;font-size:.9rem;border:1px solid #e5e7eb;border-radius:.5rem;background:#fff;transition:all .2s;font-family:inherit}
+    .form-input:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+    .form-input::placeholder{color:#9ca3af}
+    .form-input--icon{padding-left:2.75rem}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;font-size:.9rem;font-weight:600;border:none;border-radius:.5rem;cursor:pointer;transition:all .2s}
+    .btn--primary{background:#4f46e5;color:#fff}
+    .btn--primary:hover:not(:disabled){background:#4338ca}
+    .btn--secondary{background:#fff;color:#374151;border:1px solid #e5e7eb}
+    .btn--secondary:hover{background:#f9fafb;border-color:#d1d5db}
+    .btn--full{width:100%}
+    .btn:disabled{opacity:.7;cursor:not-allowed}
+
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .back-link{display:inline-flex;align-items:center;gap:.5rem;margin-top:1.5rem;font-size:.875rem;color:#6b7280;text-decoration:none;transition:color .2s}
+    .back-link:hover{color:#4f46e5}
+
+    /* SUCCESS */
+    .success-state{display:none}
+    .success-state.show{display:block}
+    .request-form.hidden{display:none}
+    .success-state__icon{width:80px;height:80px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+    .success-state__icon i{font-size:2rem;color:#059669}
+    .success-state__title{font-size:1.5rem;font-weight:700;color:#111827;margin:0 0 .75rem}
+    .success-state__text{font-size:.9rem;color:#6b7280;line-height:1.6;margin:0 0 1.5rem}
+    .success-state__text strong{color:#111827}
+    .success-state__info{display:flex;align-items:flex-start;gap:.625rem;padding:1rem;background:#f0f9ff;border-radius:.5rem;margin-bottom:1.25rem;text-align:left;font-size:.8rem;color:#0369a1}
+    .success-state__info i{flex-shrink:0;margin-top:.125rem}
+  </style>
+</head>
+<body>
+<div class="auth-card">
+  <!-- Request Form -->
+  <div class="request-form" id="requestForm">
+    <h1 class="auth-card__title">Mot de passe oublié ?</h1>
+    <p class="auth-card__subtitle">Pas de panique ! Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
+
+    <div class="alert alert--error" id="alertError"><i class="bi bi-exclamation-circle"></i><span id="errorText"></span></div>
+
+    <form class="form" onsubmit="return sendReset(event)">
+      <div class="form-group">
+        <label class="form-label">Adresse email</label>
+        <div class="input-wrapper"><i class="bi bi-envelope input-icon"></i><input type="email" class="form-input form-input--icon" placeholder="nom@exemple.com" id="email" autocomplete="email"></div>
+      </div>
+      <button type="submit" class="btn btn--primary btn--full" id="submitBtn"><span class="spinner" id="spinner"></span><i class="bi bi-send" id="btnIcon"></i><span id="btnText">Envoyer le lien</span></button>
+    </form>
+    <a href="#" class="back-link"><i class="bi bi-arrow-left"></i><span>Retour à la connexion</span></a>
+  </div>
+
+  <!-- Success State -->
+  <div class="success-state" id="successState">
+    <div class="success-state__icon"><i class="bi bi-envelope-check"></i></div>
+    <h2 class="success-state__title">Email envoyé !</h2>
+    <p class="success-state__text">Nous avons envoyé un lien de réinitialisation à<br><strong id="sentEmail"></strong></p>
+    <div class="success-state__info"><i class="bi bi-info-circle"></i><span>Le lien expirera dans 15 minutes. Vérifiez également vos spams.</span></div>
+    <button class="btn btn--secondary btn--full" onclick="resetForm()"><i class="bi bi-arrow-repeat"></i><span>Renvoyer l'email</span></button>
+    <a href="#" class="back-link"><i class="bi bi-arrow-left"></i><span>Retour à la connexion</span></a>
+  </div>
+</div>
+
+<script>
+async function sendReset(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const alertEl = document.getElementById('alertError');
+  alertEl.classList.remove('show');
+
+  if (!email) { showError('Veuillez entrer votre adresse email'); return false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Veuillez entrer une adresse email valide'); return false; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('btnIcon').style.display = 'none';
+  document.getElementById('btnText').textContent = 'Envoi en cours...';
+
+  await new Promise(r => setTimeout(r, 1500));
+
+  btn.disabled = false;
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('btnIcon').style.display = '';
+  document.getElementById('btnText').textContent = 'Envoyer le lien';
+
+  document.getElementById('sentEmail').textContent = email;
+  document.getElementById('requestForm').classList.add('hidden');
+  document.getElementById('successState').classList.add('show');
+  return false;
+}
+
+function showError(msg) {
+  document.getElementById('errorText').textContent = msg;
+  document.getElementById('alertError').classList.add('show');
+}
+
+function resetForm() {
+  document.getElementById('successState').classList.remove('show');
+  document.getElementById('requestForm').classList.remove('hidden');
+  document.getElementById('email').value = '';
+}
+</script>
+</body>
+</html>

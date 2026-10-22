@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Block 1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; display: flex; justify-content: center; padding: 4rem 2rem; }
+.cb1 { width: 100%; max-width: 720px; background: #1e293b; border-radius: 1rem; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.cb1__header { background: #0f172a; padding: .875rem 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+.cb1__lang { font-size: .75rem; font-weight: 700; color: #818cf8; font-family: monospace; }
+.cb1__copy { display: flex; align-items: center; gap: .375rem; padding: .375rem .75rem; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: .5rem; color: #94a3b8; font-size: .75rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+.cb1__copy:hover { background: rgba(255,255,255,.14); }
+.cb1__copy i { font-size: .875rem; }
+.cb1__body { padding: 1.5rem 1.5rem; overflow-x: auto; }
+.cb1__body pre { font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace; font-size: .8rem; line-height: 1.7; color: #e2e8f0; white-space: pre; }
+.cb1__body .cm { font-style: italic; }
+</style>
+</head>
+<body>
+<div class="cb1">
+  <div class="cb1__header">
+    <span class="cb1__lang">TypeScript</span>
+    <button class="cb1__copy" id="copyBtn" onclick="copyCode()">
+      <i class="bi bi-clipboard" id="copyIcon"></i>
+      <span id="copyText">Copier</span>
+    </button>
+  </div>
+  <div class="cb1__body">
+    <pre id="codeContent"><span class="cm">// app.component.ts</span>
+<span>import</span> { <span >Component</span>, <span >signal</span> } <span>from</span> <span class="st">'@angular/core'</span>;
+<span>import</span> { <span >CommonModule</span> } <span>from</span> <span class="st">'@angular/common'</span>;
+
+<span >@Component</span>({
+  selector: <span class="st">'app-root'</span>,
+  standalone: <span>true</span>,
+  imports: [<span >CommonModule</span>],
+  template: <span class="st">`
+    &lt;h1&gt;{{ title() }}&lt;/h1&gt;
+    &lt;button (click)="increment()"&gt;Count: {{ count() }}&lt;/button&gt;
+  `</span>
+})
+<span>export class</span> <span >AppComponent</span> {
+  title = <span >signal</span>(<span class="st">'Mon Application Angular'</span>);
+  count = <span >signal</span>(<span>0</span>);
+
+  increment() {
+    <span>this</span>.count.update(c =&gt; c + <span>1</span>);
+  }
+}</pre>
+  </div>
+</div>
+<script>
+function copyCode() {
+  const code = document.getElementById('codeContent').innerText;
+  navigator.clipboard.writeText(code);
+  document.getElementById('copyIcon').className = 'bi bi-check-lg';
+  document.getElementById('copyText').textContent = 'Copié !';
+  setTimeout(() => {
+    document.getElementById('copyIcon').className = 'bi bi-clipboard';
+    document.getElementById('copyText').textContent = 'Copier';
+  }, 2000);
+}
+</script>
+</body>
+</html>

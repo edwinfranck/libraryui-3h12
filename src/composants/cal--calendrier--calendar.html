@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar View — January 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; min-height: 100vh; padding: 1.5rem 2rem 2rem; color: #111827; }
+
+    .cv__wrap { background: #fff; border-radius: 1rem; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+
+    .cv__cal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; gap: 1rem; flex-wrap: wrap; }
+    .cv__cal-left { display: flex; align-items: center; gap: .75rem; }
+    .cv__month-badge { width: 2.6rem; height: 2.6rem; background: #eff6ff; border: 2px solid #bfdbfe; border-radius: .5rem; display: flex; align-items: center; justify-content: center; }
+    .cv__month-num { font-size: 1.1rem; font-weight: 700; color: #2563eb; line-height: 1; }
+    .cv__month-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+    .cv__month-range { font-size: .72rem; color: #94a3b8; margin-top: .1rem; }
+    .cv__cal-right { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+
+    .cv__icon-btn { width: 2rem; height: 2rem; border: none; background: transparent; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; border-radius: .375rem; padding: 0; transition: background .15s; }
+    .cv__icon-btn:hover { background: #f1f5f9; }
+    .cv__icon-btn svg { width: 1rem; height: 1rem; }
+
+    .cv__nav-btn { width: 2rem; height: 2rem; border: 1px solid #e2e8f0; background: #fff; cursor: pointer; color: #374151; display: flex; align-items: center; justify-content: center; border-radius: .375rem; padding: 0; transition: background .15s; }
+    .cv__nav-btn:hover { background: #f1f5f9; }
+    .cv__nav-btn svg { width: .9rem; height: .9rem; }
+
+    .cv__today-btn { padding: .35rem .85rem; border: 1px solid #e2e8f0; background: #fff; border-radius: .375rem; font-size: .8rem; font-weight: 500; color: #374151; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .cv__today-btn:hover { background: #f1f5f9; }
+
+    .cv__view-btn { display: flex; align-items: center; gap: .3rem; padding: .35rem .75rem; border: 1px solid #e2e8f0; background: #fff; border-radius: .375rem; font-size: .8rem; font-weight: 500; color: #374151; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .cv__view-btn:hover { background: #f1f5f9; }
+    .cv__view-btn svg { width: .85rem; height: .85rem; }
+
+    .cv__add-btn { display: flex; align-items: center; gap: .35rem; padding: .4rem 1rem; background: #1e293b; color: #fff; border: none; border-radius: .5rem; font-size: .82rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .cv__add-btn:hover { background: #0f172a; }
+    .cv__add-btn svg { width: .9rem; height: .9rem; }
+
+    .cv__weekdays { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid #e2e8f0; }
+    .cv__weekday { padding: .55rem .75rem; font-size: .72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; border-right: 1px solid #e2e8f0; }
+    .cv__weekday:last-child { border-right: none; }
+
+    .cv__grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cv__cell { min-height: 7.5rem; padding: .5rem .5rem .4rem; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: background .12s; position: relative; }
+    .cv__cell:nth-child(7n) { border-right: none; }
+    .cv__cell:nth-last-child(-n+7) { border-bottom: none; }
+    .cv__cell:hover { background: #f8fafc; }
+    .cv__cell--other { background: #fafafa; }
+    .cv__cell--other .cv__day-num { color: #cbd5e1; }
+    .cv__cell--today { background: #f0f9ff; }
+
+    .cv__day-num { display: inline-flex; align-items: center; justify-content: center; width: 1.55rem; height: 1.55rem; font-size: .78rem; font-weight: 600; color: #374151; border-radius: 50%; margin-bottom: .25rem; }
+    .cv__day-num--today { background: #2563eb; color: #fff; }
+
+    .cv__event { display: flex; align-items: center; gap: .3rem; padding: .18rem .4rem; border-radius: .25rem; font-size: .7rem; cursor: pointer; margin-bottom: .18rem; transition: filter .12s; overflow: hidden; white-space: nowrap; max-width: 100%; }
+    .cv__event:hover { filter: brightness(.93); }
+    .cv__event-dot { width: .42rem; height: .42rem; border-radius: 50%; flex-shrink: 0; }
+    .cv__event-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .cv__event-time { font-size: .64rem; opacity: .75; flex-shrink: 0; }
+    .cv__more { font-size: .67rem; color: #64748b; font-weight: 500; padding: .1rem .3rem; cursor: pointer; }
+    .cv__more:hover { text-decoration: underline; }
+
+    .cv__modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; backdrop-filter: blur(2px); }
+    .cv__modal-overlay.hidden { display: none; }
+    .cv__modal { background: #fff; border-radius: .875rem; width: 100%; max-width: 28rem; box-shadow: 0 20px 60px rgba(0,0,0,.18); overflow: hidden; animation: cv-slide-up .18s ease; }
+    @keyframes cv-slide-up { from { transform: translateY(1.5rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .cv__modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem .75rem; border-bottom: 1px solid #f1f5f9; }
+    .cv__modal-header h3 { margin: 0; font-size: 1rem; font-weight: 700; color: #0f172a; }
+    .cv__modal-close { width: 1.9rem; height: 1.9rem; border: none; background: #f1f5f9; border-radius: .375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #64748b; padding: 0; }
+    .cv__modal-close:hover { background: #e2e8f0; }
+    .cv__modal-close svg { width: .9rem; height: .9rem; }
+
+    .cv__modal-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .85rem; }
+    .cv__modal-error { font-size: .78rem; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: .375rem; padding: .45rem .65rem; }
+    .cv__modal-error.hidden { display: none; }
+
+    .cv__field { display: flex; flex-direction: column; gap: .3rem; }
+    .cv__field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .cv__label { font-size: .75rem; font-weight: 600; color: #374151; }
+    .cv__input { padding: .5rem .75rem; border: 1px solid #e2e8f0; border-radius: .5rem; font-size: .85rem; color: #0f172a; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; font-family: inherit; width: 100%; }
+    .cv__input:focus { border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(59,130,246,.12); }
+
+    .cv__type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+    .cv__type-chip { display: flex; flex-direction: column; align-items: center; gap: .25rem; padding: .45rem .3rem; border: 1.5px solid #e2e8f0; border-radius: .5rem; background: #fff; cursor: pointer; font-size: .68rem; font-weight: 500; color: #374151; transition: border-color .15s, background .15s; font-family: inherit; }
+    .cv__type-chip:hover { border-color: var(--chip-color); background: var(--chip-bg); }
+    .cv__type-chip.active { border-color: var(--chip-color); background: var(--chip-bg); color: var(--chip-color); font-weight: 700; }
+    .cv__type-dot { width: .6rem; height: .6rem; border-radius: 50%; }
+
+    .cv__preview .cv__event { max-width: fit-content; font-size: .78rem; padding: .25rem .55rem; }
+
+    .cv__modal-footer { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1.25rem 1rem; border-top: 1px solid #f1f5f9; gap: .5rem; }
+    .cv__modal-footer-right { display: flex; gap: .5rem; margin-left: auto; }
+    .cv__btn { padding: .45rem 1.1rem; border-radius: .5rem; font-size: .82rem; font-weight: 600; border: none; cursor: pointer; font-family: inherit; transition: background .15s; }
+    .cv__btn--primary { background: #1e293b; color: #fff; }
+    .cv__btn--primary:hover { background: #0f172a; }
+    .cv__btn--ghost { background: #f1f5f9; color: #374151; }
+    .cv__btn--ghost:hover { background: #e2e8f0; }
+    .cv__btn--danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .cv__btn--danger:hover { background: #fee2e2; }
+    .cv__btn--danger.hidden { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="cv__wrap">
+  <div class="cv__cal-header">
+    <div class="cv__cal-left">
+      <div class="cv__month-badge">
+        <span class="cv__month-num" id="todayNum"></span>
+      </div>
+      <div>
+        <h2 class="cv__month-title" id="monthTitle"></h2>
+        <p class="cv__month-range" id="monthRange"></p>
+      </div>
+    </div>
+    <div class="cv__cal-right">
+      <button class="cv__icon-btn" title="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="cv__nav-btn" id="prevBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="cv__today-btn" id="todayBtn">Today</button>
+      <button class="cv__nav-btn" id="nextBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="cv__view-btn">
+        Month view
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <button class="cv__add-btn" id="addEventBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add event
+      </button>
+    </div>
+  </div>
+
+  <div class="cv__weekdays">
+    <div class="cv__weekday">Mon</div>
+    <div class="cv__weekday">Tues</div>
+    <div class="cv__weekday">Wed</div>
+    <div class="cv__weekday">Thu</div>
+    <div class="cv__weekday">Fri</div>
+    <div class="cv__weekday">Sat</div>
+    <div class="cv__weekday">Sun</div>
+  </div>
+
+  <div class="cv__grid" id="calGrid"></div>
+</div>
+
+<!-- Modal -->
+<div class="cv__modal-overlay hidden" id="modalOverlay">
+  <div class="cv__modal">
+    <div class="cv__modal-header">
+      <h3 id="modalTitle">New event</h3>
+      <button class="cv__modal-close" id="modalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="cv__modal-body">
+      <p class="cv__modal-error hidden" id="modalError"></p>
+      <div class="cv__field">
+        <label class="cv__label" for="fieldTitle">Title</label>
+        <input class="cv__input" type="text" id="fieldTitle" placeholder="Event title" />
+      </div>
+      <div class="cv__field-row">
+        <div class="cv__field">
+          <label class="cv__label" for="fieldDate">Date</label>
+          <input class="cv__input" type="date" id="fieldDate" />
+        </div>
+        <div class="cv__field">
+          <label class="cv__label" for="fieldTime">Time</label>
+          <input class="cv__input" type="time" id="fieldTime" />
+        </div>
+      </div>
+      <div class="cv__field">
+        <label class="cv__label">Type</label>
+        <div class="cv__type-grid" id="typeGrid"></div>
+      </div>
+      <div class="cv__preview" id="previewWrap" style="display:none">
+        <div class="cv__event" id="previewChip">
+          <span class="cv__event-dot" id="previewDot"></span>
+          <span class="cv__event-title" id="previewTitle"></span>
+          <span class="cv__event-time" id="previewTime"></span>
+        </div>
+      </div>
+    </div>
+    <div class="cv__modal-footer">
+      <button class="cv__btn cv__btn--danger hidden" id="deleteBtn">Delete</button>
+      <div class="cv__modal-footer-right">
+        <button class="cv__btn cv__btn--ghost" id="cancelBtn">Cancel</button>
+        <button class="cv__btn cv__btn--primary" id="saveBtn">Add event</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+  const EVENT_TYPES = [
+    { value: 'standup',  label: 'Standup',       color: '#1d4ed8', bg: '#dbeafe' },
+    { value: 'meeting',  label: 'Meeting',        color: '#0f766e', bg: '#ccfbf1' },
+    { value: 'design',   label: 'Design',         color: '#6d28d9', bg: '#ede9fe' },
+    { value: 'planning', label: 'Planning',       color: '#c2410c', bg: '#ffedd5' },
+    { value: 'social',   label: 'Social / Lunch', color: '#be185d', bg: '#fce7f3' },
+    { value: 'review',   label: 'Review',         color: '#065f46', bg: '#d1fae5' },
+    { value: 'other',    label: 'Other',          color: '#374151', bg: '#f3f4f6' },
+  ];
+
+  let events = [
+    { id: 1,  title: 'Monday standup',     date: '2026-01-06', time: '09:00', type: 'standup'  },
+    { id: 2,  title: 'Monday standup',     date: '2026-01-13', time: '09:00', type: 'standup'  },
+    { id: 3,  title: 'Monday standup',     date: '2026-01-20', time: '09:00', type: 'standup'  },
+    { id: 4,  title: 'Monday standup',     date: '2026-01-27', time: '09:00', type: 'standup'  },
+    { id: 5,  title: 'Friday standup',     date: '2026-01-03', time: '09:00', type: 'standup'  },
+    { id: 6,  title: 'Friday standup',     date: '2026-01-10', time: '09:00', type: 'standup'  },
+    { id: 7,  title: 'Friday standup',     date: '2026-01-17', time: '09:00', type: 'standup'  },
+    { id: 8,  title: 'Friday standup',     date: '2026-01-24', time: '09:00', type: 'standup'  },
+    { id: 9,  title: 'Friday standup',     date: '2026-01-31', time: '09:00', type: 'standup'  },
+    { id: 10, title: 'One-on-one w/ ...',  date: '2026-01-02', time: '10:00', type: 'meeting'  },
+    { id: 11, title: 'All-hands meeti...', date: '2026-01-02', time: '16:00', type: 'meeting'  },
+    { id: 12, title: 'Dinner with C...',   date: '2026-01-02', time: '18:30', type: 'social'   },
+    { id: 13, title: 'Coffee with Alina',  date: '2026-01-06', time: '11:30', type: 'social'   },
+    { id: 14, title: 'Content plann...',   date: '2026-01-06', time: '11:00', type: 'planning' },
+    { id: 15, title: 'One-on-one w/...',   date: '2026-01-07', time: '10:00', type: 'meeting'  },
+    { id: 16, title: 'Catch up w/ Alex',   date: '2026-01-07', time: '14:30', type: 'social'   },
+    { id: 17, title: 'Deep work',          date: '2026-01-08', time: '09:00', type: 'other'    },
+    { id: 18, title: 'SEO planning',       date: '2026-01-08', time: '13:30', type: 'planning' },
+    { id: 19, title: 'Lunch with...',      date: '2026-01-09', time: '12:00', type: 'social'   },
+    { id: 20, title: 'House inspe...',     date: '2026-01-11', time: '11:00', type: 'other'    },
+    { id: 21, title: "Ava's engagm...",    date: '2026-01-12', time: '13:00', type: 'social'   },
+    { id: 22, title: 'Team lunch',         date: '2026-01-13', time: '12:15', type: 'social'   },
+    { id: 23, title: 'Product planning',   date: '2026-01-15', time: '09:30', type: 'planning' },
+    { id: 24, title: "Amélie's first...",  date: '2026-01-16', time: '10:00', type: 'meeting'  },
+    { id: 25, title: 'All-hands meeti...', date: '2026-01-16', time: '16:00', type: 'meeting'  },
+    { id: 26, title: 'Coffee w/ Amélie',   date: '2026-01-18', time: '09:30', type: 'social'   },
+    { id: 27, title: 'Design feedback...', date: '2026-01-18', time: '14:30', type: 'design'   },
+    { id: 28, title: 'Half marathon...',   date: '2026-01-18', time: '07:00', type: 'other'    },
+    { id: 29, title: 'Deep work',          date: '2026-01-20', time: '09:15', type: 'other'    },
+    { id: 30, title: 'Quarterly review',   date: '2026-01-21', time: '11:30', type: 'review'   },
+    { id: 31, title: 'Lunch with Zahir',   date: '2026-01-21', time: '13:00', type: 'social'   },
+    { id: 32, title: 'Deep work',          date: '2026-01-22', time: '09:00', type: 'other'    },
+    { id: 33, title: 'Design sync',        date: '2026-01-22', time: '14:30', type: 'design'   },
+    { id: 34, title: 'Dinner with C...',   date: '2026-01-22', time: '19:00', type: 'social'   },
+    { id: 35, title: 'Amélie coffee',      date: '2026-01-23', time: '10:00', type: 'social'   },
+    { id: 36, title: 'Accountant',         date: '2026-01-24', time: '13:45', type: 'meeting'  },
+    { id: 37, title: 'Marketing site...', date: '2026-01-24', time: '14:30', type: 'planning'  },
+    { id: 38, title: 'Content plann...',   date: '2026-01-28', time: '11:00', type: 'planning' },
+    { id: 39, title: 'Lunch with Alina',   date: '2026-01-28', time: '12:45', type: 'social'   },
+    { id: 40, title: 'Product planning',   date: '2026-01-29', time: '09:30', type: 'planning' },
+    { id: 41, title: 'All-hands meeti...', date: '2026-01-30', time: '16:00', type: 'meeting'  },
+    { id: 42, title: 'Team dinner',        date: '2026-01-30', time: '17:30', type: 'social'   },
+  ];
+
+  let nextId = 100;
+  const today = new Date();
+  let currentYear = 2026;
+  let currentMonth = 0;
+
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function toKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+  }
+
+  function isToday(date) {
+    return date.getFullYear() === today.getFullYear() &&
+           date.getMonth()    === today.getMonth() &&
+           date.getDate()     === today.getDate();
+  }
+
+  function typeInfo(type) {
+    return EVENT_TYPES.find(t => t.value === type) || EVENT_TYPES[EVENT_TYPES.length - 1];
+  }
+
+  function formatTime(time) {
+    const parts = time.split(':').map(Number);
+    const h = parts[0], m = parts[1];
+    const period = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return hour + ':' + String(m).padStart(2, '0') + ' ' + period;
+  }
+
+  function eventsForDay(date) {
+    const key = toKey(date);
+    return events.filter(e => e.date === key).sort((a, b) => a.time.localeCompare(b.time));
+  }
+
+  function buildCalendar() {
+    document.getElementById('todayNum').textContent = today.getDate();
+    document.getElementById('monthTitle').textContent = MONTH_NAMES[currentMonth] + ' ' + currentYear;
+    const start = new Date(currentYear, currentMonth, 1);
+    const end   = new Date(currentYear, currentMonth + 1, 0);
+    document.getElementById('monthRange').textContent =
+      SHORT_MONTHS[currentMonth] + ' ' + start.getDate() + ', ' + currentYear + ' \u2013 ' +
+      SHORT_MONTHS[currentMonth] + ' ' + end.getDate() + ', ' + currentYear;
+
+    let startDow = start.getDay();
+    startDow = startDow === 0 ? 6 : startDow - 1;
+
+    const days = [];
+    for (let i = startDow - 1; i >= 0; i--) {
+      days.push({ date: new Date(currentYear, currentMonth, -i), isCurrentMonth: false });
+    }
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      days.push({ date: new Date(currentYear, currentMonth, d), isCurrentMonth: true });
+    }
+    const remaining = 42 - days.length;
+    for (let d = 1; d <= remaining; d++) {
+      days.push({ date: new Date(currentYear, currentMonth + 1, d), isCurrentMonth: false });
+    }
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    days.forEach(function(item) {
+      const date = item.date;
+      const isCurrent = item.isCurrentMonth;
+      const cell = document.createElement('div');
+      cell.className = 'cv__cell' +
+        (!isCurrent ? ' cv__cell--other' : '') +
+        (isToday(date) ? ' cv__cell--today' : '');
+      cell.addEventListener('click', function() { openAdd(date); });
+
+      const numEl = document.createElement('div');
+      numEl.className = 'cv__day-num' + (isToday(date) ? ' cv__day-num--today' : '');
+      numEl.textContent = date.getDate();
+      cell.appendChild(numEl);
+
+      const dayEvs = eventsForDay(date);
+      dayEvs.forEach(function(ev, i) {
+        if (i >= 3) return;
+        const info = typeInfo(ev.type);
+        const chip = document.createElement('div');
+        chip.className = 'cv__event';
+        chip.style.background = info.bg;
+        chip.style.color = info.color;
+        chip.title = ev.title;
+        chip.innerHTML =
+          '<span class="cv__event-dot" style="background:' + info.color + '"></span>' +
+          '<span class="cv__event-title">' + ev.title + '</span>' +
+          '<span class="cv__event-time">' + formatTime(ev.time) + '</span>';
+        chip.addEventListener('click', (function(e) { return function(evt) { evt.stopPropagation(); openEdit(e); }; })(ev));
+        cell.appendChild(chip);
+      });
+
+      if (dayEvs.length > 3) {
+        const more = document.createElement('div');
+        more.className = 'cv__more';
+        more.textContent = (dayEvs.length - 3) + ' more...';
+        cell.appendChild(more);
+      }
+
+      grid.appendChild(cell);
+    });
+  }
+
+  let editingEvent = null;
+  let formType = 'meeting';
+
+  function openAdd(date) {
+    editingEvent = null;
+    document.getElementById('modalTitle').textContent = 'New event';
+    document.getElementById('fieldTitle').value = '';
+    document.getElementById('fieldDate').value = date ? toKey(date) : toKey(new Date());
+    document.getElementById('fieldTime').value = '09:00';
+    formType = 'meeting';
+    document.getElementById('deleteBtn').classList.add('hidden');
+    document.getElementById('saveBtn').textContent = 'Add event';
+    showError('');
+    renderTypeChips();
+    updatePreview();
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+
+  function openEdit(ev) {
+    editingEvent = ev;
+    document.getElementById('modalTitle').textContent = 'Edit event';
+    document.getElementById('fieldTitle').value = ev.title;
+    document.getElementById('fieldDate').value = ev.date;
+    document.getElementById('fieldTime').value = ev.time;
+    formType = ev.type;
+    document.getElementById('deleteBtn').classList.remove('hidden');
+    document.getElementById('saveBtn').textContent = 'Save changes';
+    showError('');
+    renderTypeChips();
+    updatePreview();
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.add('hidden');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('modalError');
+    el.textContent = msg;
+    el.classList.toggle('hidden', !msg);
+  }
+
+  function renderTypeChips() {
+    const grid = document.getElementById('typeGrid');
+    grid.innerHTML = '';
+    EVENT_TYPES.forEach(function(t) {
+      const btn = document.createElement('button');
+      btn.className = 'cv__type-chip' + (formType === t.value ? ' active' : '');
+      btn.style.setProperty('--chip-color', t.color);
+      btn.style.setProperty('--chip-bg', t.bg);
+      btn.innerHTML = '<span class="cv__type-dot" style="background:' + t.color + '"></span>' + t.label;
+      btn.addEventListener('click', function() {
+        formType = t.value;
+        renderTypeChips();
+        updatePreview();
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  function updatePreview() {
+    const title = document.getElementById('fieldTitle').value.trim();
+    const time  = document.getElementById('fieldTime').value || '09:00';
+    const info  = typeInfo(formType);
+    const wrap  = document.getElementById('previewWrap');
+    if (title) {
+      wrap.style.display = '';
+      const chip = document.getElementById('previewChip');
+      chip.style.background = info.bg;
+      chip.style.color = info.color;
+      document.getElementById('previewDot').style.background = info.color;
+      document.getElementById('previewTitle').textContent = title;
+      document.getElementById('previewTime').textContent = formatTime(time);
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  function saveEvent() {
+    const title = document.getElementById('fieldTitle').value.trim();
+    const date  = document.getElementById('fieldDate').value;
+    const time  = document.getElementById('fieldTime').value;
+    if (!title) { showError('Title is required.'); return; }
+    if (!date)  { showError('Date is required.');  return; }
+    showError('');
+    if (editingEvent) {
+      editingEvent.title = title;
+      editingEvent.date  = date;
+      editingEvent.time  = time;
+      editingEvent.type  = formType;
+    } else {
+      events.push({ id: nextId++, title: title, date: date, time: time, type: formType });
+    }
+    closeModal();
+    buildCalendar();
+  }
+
+  function deleteEvent() {
+    if (editingEvent) {
+      events = events.filter(function(e) { return e.id !== editingEvent.id; });
+      closeModal();
+      buildCalendar();
+    }
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', function() {
+    if (currentMonth === 0) { currentMonth = 11; currentYear--; } else { currentMonth--; }
+    buildCalendar();
+  });
+  document.getElementById('nextBtn').addEventListener('click', function() {
+    if (currentMonth === 11) { currentMonth = 0; currentYear++; } else { currentMonth++; }
+    buildCalendar();
+  });
+  document.getElementById('todayBtn').addEventListener('click', function() {
+    currentYear = today.getFullYear(); currentMonth = today.getMonth(); buildCalendar();
+  });
+  document.getElementById('addEventBtn').addEventListener('click', function() { openAdd(); });
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  document.getElementById('saveBtn').addEventListener('click', saveEvent);
+  document.getElementById('deleteBtn').addEventListener('click', deleteEvent);
+  document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  });
+  document.getElementById('fieldTitle').addEventListener('input', updatePreview);
+  document.getElementById('fieldTime').addEventListener('input', updatePreview);
+
+  buildCalendar();
+  window.deleteEvent = deleteEvent;
+  window.openAdd = openAdd;
+  window.saveEvent = saveEvent;
+  window.updatePreview = updatePreview;
+  window.renderTypeChips = renderTypeChips;
+  window.showError = showError;
+  window.openEdit = openEdit;
+  window.closeModal = closeModal;
+  window.buildCalendar = buildCalendar;
+  window.eventsForDay = eventsForDay;
+  window.formatTime = formatTime;
+  window.typeInfo = typeInfo;
+  window.isToday = isToday;
+  window.toKey = toKey;
+ })();
+</script>
+</body>
+</html>

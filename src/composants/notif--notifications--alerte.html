@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f3f4f6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* CARD */
+    .nt {
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    .nt__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.25rem .75rem;
+    }
+    .nt__title { font-size: 1rem; font-weight: 700; color: #111827; }
+    .nt__mark-read {
+      background: none; border: none; font-size: .78rem;
+      font-weight: 600; color: #2563eb; cursor: pointer;
+    }
+    .nt__mark-read:hover { color: #1d4ed8; }
+
+    /* TABS */
+    .nt__tabs {
+      display: flex; align-items: center;
+      border-bottom: 1px solid #e5e7eb; padding: 0 1.25rem;
+    }
+    .nt__tabs-list { display: flex; flex: 1; }
+    .nt__tab {
+      background: none; border: none; padding: .65rem .9rem;
+      font-size: .82rem; font-weight: 500; color: #6b7280;
+      cursor: pointer; display: flex; align-items: center; gap: .35rem;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color .15s, border-color .15s; font-family: inherit;
+    }
+    .nt__tab.active { color: #111827; font-weight: 700; border-bottom-color: #111827; }
+    .nt__tab:not(.active):hover { color: #111827; }
+    .nt__badge {
+      background: #ef4444; color: #fff; font-size: .62rem;
+      font-weight: 700; width: 18px; height: 18px;
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; line-height: 1;
+    }
+    .nt__filter {
+      background: none; border: none; cursor: pointer; color: #6b7280;
+      display: flex; align-items: center; padding: .4rem;
+      border-radius: 6px; margin-left: auto;
+    }
+    .nt__filter:hover { background: #f9fafb; }
+
+    /* LIST */
+    .nt__item {
+      display: flex; gap: .85rem; padding: 1rem 1.25rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .nt__item:last-child { border-bottom: none; }
+
+    /* AVATAR */
+    .nt__avatar-wrap { position: relative; flex-shrink: 0; }
+    .nt__avatar {
+      width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+      border: 1px solid #e5e7eb; background: #f9fafb; display: block;
+    }
+    .nt__dot {
+      width: 9px; height: 9px; background: #ef4444;
+      border-radius: 50%; border: 1.5px solid #fff;
+      position: absolute; top: 0; right: 0;
+    }
+    .nt__dot.hidden { display: none; }
+
+    /* CONTENT */
+    .nt__content { flex: 1; min-width: 0; }
+    .nt__message { font-size: .82rem; color: #111827; line-height: 1.5; margin-bottom: .3rem; }
+    .nt__message strong { font-weight: 700; }
+    .nt__meta {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .72rem; color: #6b7280; margin-bottom: .3rem;
+    }
+    .nt__sep { color: #e5e7eb; }
+
+    /* ACTIONS */
+    .nt__actions { display: flex; gap: .5rem; margin-top: .5rem; }
+    .nt__action-btn {
+      padding: .38rem 1rem; border-radius: 6px; font-size: .78rem;
+      font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: background .15s;
+    }
+    .nt__action-btn--outline {
+      background: #fff; border: 1px solid #e5e7eb; color: #111827;
+    }
+    .nt__action-btn--outline:hover { background: #f9fafb; }
+    .nt__action-btn--primary {
+      background: #2563eb; border: 1px solid #2563eb; color: #fff;
+    }
+    .nt__action-btn--primary:hover { background: #1d4ed8; }
+
+    /* ATTACHMENT */
+    .nt__attachment {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .75rem; color: #6b7280; border: 1px solid #e5e7eb;
+      border-radius: 6px; padding: .3rem .65rem; margin-top: .5rem;
+    }
+
+    /* COMMENT */
+    .nt__comment {
+      font-size: .78rem; color: #6b7280; border: 1px solid #e5e7eb;
+      border-radius: 6px; padding: .45rem .75rem; margin-top: .5rem;
+      background: #f9fafb;
+    }
+
+    /* FOOTER */
+    .nt__footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .75rem 1.25rem; border-top: 1px solid #e5e7eb; background: #f9fafb;
+    }
+    .nt__nav-hint {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .72rem; color: #6b7280;
+    }
+    .nt__key {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; border: 1px solid #e5e7eb;
+      border-radius: 4px; font-size: .65rem; background: #fff; color: #111827;
+    }
+    .nt__manage {
+      display: flex; align-items: center; gap: .35rem; background: none;
+      border: none; font-size: .72rem; color: #6b7280; cursor: pointer;
+      font-family: inherit;
+    }
+    .nt__manage:hover { color: #111827; }
+
+    /* Avatar fallback (initials) */
+    .nt__avatar-init {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="nt">
+
+  <!-- HEADER -->
+  <div class="nt__header">
+    <span class="nt__title">Notifications</span>
+    <button class="nt__mark-read" onclick="markAllRead()">Mark all as read</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="nt__tabs">
+    <div class="nt__tabs-list">
+      <button class="nt__tab active" onclick="setTab(this,'all')">All</button>
+      <button class="nt__tab" onclick="setTab(this,'inbox')">
+        Inbox <span class="nt__badge" id="inbox-badge">2</span>
+      </button>
+      <button class="nt__tab" onclick="setTab(this,'following')">Following</button>
+      <button class="nt__tab" onclick="setTab(this,'archived')">Archived</button>
+    </div>
+    <button class="nt__filter" title="Filter">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="11" y1="18" x2="13" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- NOTIFICATION LIST -->
+  <div class="nt__list" id="notif-list">
+
+    <!-- 1. Join -->
+    <div class="nt__item" data-id="1">
+      <div class="nt__avatar-wrap">
+        <div class="nt__avatar-init" style="background:#6366f1">WC</div>
+        <span class="nt__dot" id="dot-1"></span>
+      </div>
+      <div class="nt__content">
+        <div class="nt__message">
+          <strong>Wei Chen</strong> joined <strong>Final Presentation</strong>
+        </div>
+        <div class="nt__meta">
+          <span>8 min ago</span>
+          <span class="nt__sep">·</span>
+          <span class="nt__workspace-icon">🌐</span>
+          <span class="nt__workspace">Horizon Shift</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Invite -->
+    <div class="nt__item" data-id="2">
+      <div class="nt__avatar-wrap">
+        <div class="nt__avatar-init" style="background:#ec4899">SW</div>
+        <span class="nt__dot" id="dot-2"></span>
+      </div>
+      <div class="nt__content">
+        <div class="nt__message">
+          <strong>Sophia Williams</strong> invites you to collaborate on
+          <strong>synergy.fig</strong>
+        </div>
+        <div class="nt__meta">
+          <span>2 hours ago</span>
+          <span class="nt__sep">·</span>
+          <span class="nt__workspace-icon">💼</span>
+          <span class="nt__workspace">Synergy HR</span>
+        </div>
+        <div class="nt__actions" id="actions-2">
+          <button class="nt__action-btn nt__action-btn--outline" onclick="handleAction(2,'deny')">Deny</button>
+          <button class="nt__action-btn nt__action-btn--primary" onclick="handleAction(2,'approve')">Approve</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Upload -->
+    <div class="nt__item" data-id="3">
+      <div class="nt__avatar-wrap">
+        <div class="nt__avatar-init" style="background:#f59e0b">AT</div>
+      </div>
+      <div class="nt__content">
+        <div class="nt__message">
+          <strong>Arthur Taylor</strong> uploaded <strong>arthur.csv</strong>
+        </div>
+        <div class="nt__meta">
+          <span>3 hours ago</span>
+          <span class="nt__sep">·</span>
+          <span class="nt__workspace-icon">📈</span>
+          <span class="nt__workspace">Apex Financial</span>
+        </div>
+        <div class="nt__attachment">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+          </svg>
+          arthur.csv <span style="color:#9ca3af">(4mb)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Comment -->
+    <div class="nt__item" data-id="4">
+      <div class="nt__avatar-wrap">
+        <div class="nt__avatar-init" style="background:#10b981">LP</div>
+      </div>
+      <div class="nt__content">
+        <div class="nt__message">
+          <strong>Laura Perez</strong> commented on your post
+        </div>
+        <div class="nt__meta">
+          <span>2 days ago</span>
+          <span class="nt__sep">·</span>
+          <span class="nt__workspace-icon">☀️</span>
+          <span class="nt__workspace">Solaris</span>
+        </div>
+        <div class="nt__comment">Fantastic! Let's dive right in 🚀</div>
+      </div>
+    </div>
+
+  </div><!-- /nt__list -->
+
+  <!-- FOOTER -->
+  <div class="nt__footer">
+    <div class="nt__nav-hint">
+      <span class="nt__key">↑</span>
+      <span class="nt__key">↓</span>
+      <span>navigate</span>
+    </div>
+    <button class="nt__manage">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+      Manage Notifications
+    </button>
+  </div>
+
+</div><!-- /nt -->
+
+<script>
+(function () {
+  function setTab(btn, tab) {
+    document.querySelectorAll('.nt__tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function markAllRead() {
+    document.querySelectorAll('.nt__dot').forEach(d => d.classList.add('hidden'));
+    const badge = document.getElementById('inbox-badge');
+    if (badge) badge.style.display = 'none';
+  }
+
+  function handleAction(id, action) {
+    const actions = document.getElementById('actions-' + id);
+    if (actions) {
+      const dot = document.getElementById('dot-' + id);
+      if (dot) dot.classList.add('hidden');
+      actions.innerHTML = '<span style="font-size:.78rem;color:#6b7280;">' +
+        (action === 'approve' ? '✅ Approved' : '❌ Denied') + '</span>';
+    }
+  }
+
+  // Expose to global scope so onclick attributes can reach them
+  window.setTab = setTab;
+  window.markAllRead = markAllRead;
+  window.handleAction = handleAction;
+})();
+</script>
+
+</body>
+</html>
